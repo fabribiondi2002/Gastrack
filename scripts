@@ -1,0 +1,31 @@
+docker volume create gastrack_data
+
+docker run -d \
+  --name gastrack \
+  --restart always \
+  -e MYSQL_ROOT_PASSWORD=admin \
+  -e MYSQL_DATABASE=gastrack_db \
+  -e MYSQL_USER=admin \
+  -e MYSQL_PASSWORD=admin \
+  -p 33306:3306 \
+  -v gastrack_data:/var/lib/mysql \
+  -v /etc/localtime:/etc/localtime:ro \
+  mysql:8.0.43 \
+        --character-set-server=utf8mb4 \
+        --collation-server=utf8mb4_0900_ai_ci \
+        --default-authentication-plugin=mysql_native_password
+
+
+docker exec -it gastrack bash
+
+mysql -uroot -padmin
+DROP USER IF EXISTS 'admin'@'localhost';
+DROP USER IF EXISTS 'admin'@'127.0.0.1';
+DROP USER IF EXISTS 'admin'@'::1';
+DROP USER IF EXISTS 'admin'@'%';
+
+CREATE USER admin@'%' IDENTIFIED BY 'admin';
+GRANT ALL PRIVILEGES ON *.* TO admin@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+
