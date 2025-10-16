@@ -18,9 +18,9 @@ public interface ICisternaBusiness {
 
     public Cisterna load(long id) throws NotFoundException, BusinessException;
 
-	public Cisterna add(Cisterna camion) throws FoundException, BusinessException;
+	public Cisterna add(Cisterna cisterna) throws FoundException, BusinessException;
 
-	public Cisterna update(Cisterna camion) throws FoundException, NotFoundException, BusinessException;
+	public Cisterna update(Cisterna cisterna) throws FoundException, NotFoundException, BusinessException;
 
 	public void delete(long id) throws NotFoundException, BusinessException;
 
