@@ -4,7 +4,7 @@ docker run -d \
   --name gastrack \
   --restart always \
   -e MYSQL_ROOT_PASSWORD=admin \
-  -e MYSQL_DATABASE=gastrack_db \
+  -e MYSQL_DATABASE=gastrack \
   -e MYSQL_USER=admin \
   -e MYSQL_PASSWORD=admin \
   -p 33306:3306 \

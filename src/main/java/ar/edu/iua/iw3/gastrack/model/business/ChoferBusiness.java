@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Clase que implementa la logica de negocio para los choferes
+ * 
  * @author Leandro Biondi
  * @author Benjamin Vargas
  * @author Antonella Badami
@@ -26,6 +27,7 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Listar todos los choferes
+     * 
      * @return Lista de choferes
      * @throws BusinessException Si ocurre un error no previsto
      */
@@ -41,6 +43,7 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Obtener un chofer por id
+     * 
      * @param id Id del chofer
      * @return Chofer
      * @throws NotFoundException Si no se encuentra el chofer
@@ -63,6 +66,7 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Obtener un chofer por documento
+     * 
      * @param documento Documento del chofer
      * @return Chofer
      * @throws NotFoundException Si no se encuentra el chofer
@@ -85,9 +89,10 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Agregar un chofer
+     * 
      * @param chofer Chofer a agregar
      * @return Chofer agregado
-     * @throws FoundException Si ya existe un chofer con el mismo id o documento
+     * @throws FoundException    Si ya existe un chofer con el mismo id o documento
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
@@ -113,10 +118,11 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Actualizar informacion de un chofer sin poder repetir documento
+     * 
      * @param chofer Chofer a actualizar
      * @return Chofer actualizado
      * @throws NotFoundException Si no se encuentra el chofer a actualizar
-     * @throws FoundException Si ya existe un chofer con el mismo documento
+     * @throws FoundException    Si ya existe un chofer con el mismo documento
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
@@ -143,6 +149,7 @@ public class ChoferBusiness implements IChoferBusiness {
 
     /**
      * Eliminar un chofer
+     * 
      * @param id Id del chofer a eliminar
      * @throws NotFoundException Si no se encuentra el chofer a eliminar
      * @throws BusinessException Si ocurre un error no previsto

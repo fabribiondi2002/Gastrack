@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "dev.info.enabled",
+  "type": "java.lang.String",
+  "description": "Permite ver el detalle de los logs a nivel desarrollador"
+}]}
