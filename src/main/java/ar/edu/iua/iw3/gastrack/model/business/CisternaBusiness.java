@@ -123,7 +123,7 @@ public class CisternaBusiness implements ICisternaBusiness{
     }
 
     /**
-     * Eliminar un cisterna por id
+     * Eliminar una cisterna por id
      * 
      * @param id Id de la cisterna a eliminar
      * @throws NotFoundException Si no se encuentra la cisterna a eliminar
