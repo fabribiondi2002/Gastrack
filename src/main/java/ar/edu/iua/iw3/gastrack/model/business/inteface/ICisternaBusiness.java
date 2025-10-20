@@ -1,7 +1,11 @@
-package ar.edu.iua.iw3.gastrack.model.business;
+package ar.edu.iua.iw3.gastrack.model.business.inteface;
 
 import java.util.List;
+
 import ar.edu.iua.iw3.gastrack.model.Cisterna;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 
 /** 
  * Interfaz para la logica de negocio de las ciscernas 

@@ -1,17 +1,21 @@
-package ar.edu.iua.iw3.gastrack.model.business;
+package ar.edu.iua.iw3.gastrack.model.business.inteface;
 
 import java.util.List;
 
 import ar.edu.iua.iw3.gastrack.model.Cliente;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 
-/** 
- * Interfaz para la logica de negocio de los clientes 
+/**
+ * Interfaz para la logica de negocio de los clientes
+ * 
  * @author Leandro Biondi
  * @author Benjamin Vargas
  * @author Antonella Badami
  * @version 1.0
  * @since 2025-10-16
-*/
+ */
 
 public interface IClienteBusiness {
     public List<Cliente> list() throws BusinessException;

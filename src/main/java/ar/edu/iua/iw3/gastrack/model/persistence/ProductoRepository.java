@@ -16,4 +16,6 @@ public interface ProductoRepository  extends JpaRepository<Producto,Long>
      * @return El producto encontrado o null si no existe
      */
     Optional<Producto> findByNombre(String nombre);
+
+    Optional<Producto> findByNombreAndIdNot(String nombre, Long id);
 }
