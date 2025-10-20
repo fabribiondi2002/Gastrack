@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Cisterna;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.inteface.ICisternaBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.CisternaRepository;
 import lombok.extern.slf4j.Slf4j;
 

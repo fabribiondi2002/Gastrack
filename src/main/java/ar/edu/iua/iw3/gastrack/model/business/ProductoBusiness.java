@@ -1,10 +1,15 @@
 package ar.edu.iua.iw3.gastrack.model.business;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Producto;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.inteface.IProductoBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.ProductoRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,12 +25,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class ProductoBusiness implements IProductoBusiness{
-    
+public class ProductoBusiness implements IProductoBusiness {
+
     private ProductoRepository productoDAO;
+    
 
-
-     /**
+    /**
      * Agregar un producto
      * 
      * @param producto Producto a agregar
@@ -65,19 +70,19 @@ public class ProductoBusiness implements IProductoBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public Producto load(long id) throws NotFoundException, BusinessException {
-		Optional<Producto> p;
-		try {
-			p = productoDAO.findById(id);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
-		if (p.isEmpty()) {
-			throw NotFoundException.builder().message("No se encuentra el Producto id: " + id).build();
-		}
-		return p.get();
-	}
+    public Producto load(long id) throws NotFoundException, BusinessException {
+        Optional<Producto> p;
+        try {
+            p = productoDAO.findById(id);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (p.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentra el Producto id: " + id).build();
+        }
+        return p.get();
+    }
 
     /**
      * Obtener un producto por nombre
@@ -102,5 +107,47 @@ public class ProductoBusiness implements IProductoBusiness{
         return p.get();
     }
 
-    
+    @Override
+    public Producto update(Producto producto) throws NotFoundException, FoundException, BusinessException {
+        load(producto.getId());
+		Optional<Producto> nombreExistente=null;
+		try {
+			nombreExistente=productoDAO.findByNombreAndIdNot(producto.getNombre(), producto.getId());
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw BusinessException.builder().ex(e).build();
+		}
+		if(nombreExistente.isPresent()) {
+			throw FoundException.builder().message("Se encontró un producto con nombre="+producto.getNombre()).build();
+		}
+
+		try {
+			return productoDAO.save(producto);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw BusinessException.builder().ex(e).build();
+		}
+    }
+
+    @Override
+    public void delete(long id) throws NotFoundException, BusinessException {
+        load(id);
+        try {
+            productoDAO.deleteById(id);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+    }
+
+    @Override
+    public List<Producto> list() throws BusinessException, NotFoundException {
+        try {
+            return productoDAO.findAll();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+    }
+
 }

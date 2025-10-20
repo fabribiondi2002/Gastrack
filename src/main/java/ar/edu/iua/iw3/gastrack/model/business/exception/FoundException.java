@@ -1,4 +1,4 @@
-package ar.edu.iua.iw3.gastrack.model.business;
+package ar.edu.iua.iw3.gastrack.model.business.exception;
 
 import lombok.Builder;
 import lombok.NoArgsConstructor;
