@@ -31,5 +31,12 @@ public interface OrdenRepository extends JpaRepository<Orden,Long>{
      * @param numeroOrden Numero de la orden
      * @return Orden con el numero especificado
      */
-    Optional<Orden> findByNumeroOrden(String numeroOrden);
+    Optional<Orden> findByNumeroOrden(long numeroOrden);
+
+    /*
+     * Buscar una orden por su codigo externo
+     * @param codigoExterno Codigo externo de la orden
+     * @return Orden con el codigo externo especificado
+     */
+    Optional<Orden> findByCodigoExterno(String codigoExterno);
 }

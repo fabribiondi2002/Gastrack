@@ -27,6 +27,10 @@ public interface IOrdenBusiness {
 
     public void delete(long id) throws NotFoundException, BusinessException;
 
-    public Orden loadByNumeroOrden(String numeroOrden) throws NotFoundException, BusinessException;
+    public Orden loadByNumeroOrden(long numeroOrden) throws NotFoundException, BusinessException;
+
+    public Orden loadByCodigoExterno(String codigoExterno) throws NotFoundException, BusinessException;
+    
+    public Orden addExternal(String json) throws FoundException, BusinessException;
 
 }

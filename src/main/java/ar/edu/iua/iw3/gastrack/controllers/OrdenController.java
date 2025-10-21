@@ -130,6 +130,16 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.FOUND, e, e.getMessage()), HttpStatus.FOUND);
 		}
 	}
-
+	@GetMapping(value = "/{codCli1}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> loadByCode(@PathVariable("codCli1") String codCli1) {
+		try {
+			return new ResponseEntity<>(ordenBusiness.loadByCodigoExterno(codCli1), HttpStatus.OK);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		}
+	}
 
 }

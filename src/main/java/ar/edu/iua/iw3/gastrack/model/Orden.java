@@ -34,6 +34,7 @@ import lombok.Setter;
  * @param numeroOrden Número único de la orden.
  * @param estado Estado actual de la orden.
  * @param contrasenaActivacion Contraseña de activación de la orden.
+ * @param codigoExterno Código externo de la orden.
  * @param preset Volumen a cargar de la orden.
  * @param pesoInicial Peso inicial del camión.
  * @param pesoFinal Peso final del camión.
@@ -68,21 +69,27 @@ public class Orden {
     private long id;
 
     @Column(nullable = false, unique = true)
-    private String numeroOrden;
+    private long numeroOrden;
+
+
+    @Column(nullable = true, unique = true)
+    private String codigoExterno;
 
     @Enumerated(EnumType.STRING)
     @Column()
     private Estado estado;
 
     public enum Estado {
-        ORDEN_CREADA,
-        ORDEN_CANCELADA,
-        PESO_INICIAL_REGISTRADO,
-        ORDEN_CERRADA,
-        PESO_FINAL_REGISTRADO
+        PENDIENTE_PESAJE_INICIAL,
+        PESAJE_INICIAL_REGISTRADO,
+        ORDEN_CERRADA_PARA_CARGA,
+        PESAJE_FINAL_REGISTRADO,
+        ORDEN_CANCELADA
     }
-    @Column(unique = true)
+
+    @Column(unique = true, length = 5)
     private long contrasenaActivacion;
+    
     @Column(nullable = false)
     private double preset;
 

@@ -67,7 +67,7 @@ public class OrdenBusiness implements IOrdenBusiness {
     }
 
     @Override
-    public Orden loadByNumeroOrden(String numeroOrden) throws NotFoundException, BusinessException {
+    public Orden loadByNumeroOrden(long numeroOrden) throws NotFoundException, BusinessException {
         Optional<Orden> o;
         try {
             o = ordenDAO.findByNumeroOrden(numeroOrden);
@@ -86,7 +86,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      * 
      * @return orden añadida
      * @throws BusinessException Si ocurre un error no previsto
-     * @throws FoundException Si ya existe una orden con ese numero
+     * @throws FoundException Si ya existe una orden con ese numero, uno con el id o uno con el codigo externo
      */
     @Override
     public Orden add(Orden orden) throws FoundException, BusinessException {
@@ -104,12 +104,20 @@ public class OrdenBusiness implements IOrdenBusiness {
             
         }
         try {
+            loadByCodigoExterno(orden.getCodigoExterno());
+            throw FoundException.builder().message("Se encontró la orden de codigo externo" + orden.getCodigoExterno()).build();
+        } catch (NotFoundException e) {
+
+        }
+        try {
             return ordenDAO.save(orden);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         }
     }
+    
+    
      /*
      * Obtener un orden por id
      * 
@@ -151,6 +159,40 @@ public class OrdenBusiness implements IOrdenBusiness {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         }
+    }
+
+    /*
+     * Obtener una orden por su codigo externo
+     * @param codigoExterno Codigo externo de la orden
+     * @return Orden cargada
+     * @throws NotFoundException Si no existe una orden con ese codigo externo
+     * @throws BusinessException Si ocurre un error no previsto
+     */
+
+    @Override
+    public Orden loadByCodigoExterno(String codigoExterno) throws NotFoundException, BusinessException {
+        Optional<Orden> r;
+		try {
+			r = ordenDAO.findByCodigoExterno(codigoExterno);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw BusinessException.builder().ex(e).build();
+		}
+		if (r.isEmpty()) {
+			throw NotFoundException.builder().message("No se encuentra la Orden con codigo=" + codigoExterno).build();
+		}
+		return r.get();
+    }
+
+    /*
+     * Registra los objetos mandados en el Json al registrar las ordenes
+     * 
+     */
+
+    @Override
+    public Orden addExternal(String json) throws FoundException, BusinessException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addExternal'");
     }
 
 }
