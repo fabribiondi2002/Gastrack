@@ -33,4 +33,6 @@ public interface IOrdenBusiness {
     
     public Orden addExternal(String json) throws FoundException, BusinessException;
 
+    public Orden registrarTara(long id, double pesoInicial) throws NotFoundException, BusinessException;
+    
 }

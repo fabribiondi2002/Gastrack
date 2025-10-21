@@ -14,6 +14,9 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
+
 @Service
 @Slf4j
 public class OrdenBusiness implements IOrdenBusiness {
@@ -195,4 +198,54 @@ public class OrdenBusiness implements IOrdenBusiness {
         throw new UnsupportedOperationException("Unimplemented method 'addExternal'");
     }
 
+    /**
+     * Registra el pesaje inicial (tara) para una orden identificada por su id.
+     *
+     * @param id identificador interno de la orden.
+     * @param pesoInicial peso del camion vacio (tara)
+     * @return orden actualizada luego del registro de la tara.
+     * @throws NotFoundException si no existe una orden con el id indicado.
+     * @throws BusinessException si la orden no esta en el estado esperado o ocurre
+     *         algun error no previsto
+     */
+    @Override
+    public Orden registrarTara(long id, double pesoInicial) throws NotFoundException, BusinessException {
+        try {
+            Optional<Orden> or = ordenDAO.findById(id);
+            if (!or.isPresent()) {
+                throw NotFoundException.builder().message("No se encontró la orden con id " + id).build();
+            }
+
+            Orden orden = or.get();
+
+            // Valida estado actual
+            if (orden.getEstado() != Orden.Estado.PENDIENTE_PESAJE_INICIAL) {
+                throw BusinessException.builder()
+                        .message("La orden debe estar en estado PENDIENTE_PESAJE_INICIAL para registrar la tara. Estado actual: "
+                                + (orden.getEstado() != null ? orden.getEstado().name() : "NULL"))
+                        .build();
+            }
+
+            // Registra valores de pesaje inicial
+            orden.setPesoInicial(pesoInicial);
+            orden.setFechaPesajeInicial(new Date());
+
+            // contraseña de 5 digitos
+            int clave = ThreadLocalRandom.current().nextInt(10000, 100000);
+            orden.setContrasenaActivacion(clave);
+
+            // Cambia estado
+            orden.setEstado(Orden.Estado.PESAJE_INICIAL_REGISTRADO);
+
+            return ordenDAO.save(orden);
+
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).message("Error al registrar la tara").build();
+        }
+    }
 }

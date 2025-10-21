@@ -21,6 +21,8 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
+import java.util.Map;
+
 /*
  * Controlador REST para la gestion de ordenes
  * @author Leandro Biondi
@@ -137,6 +139,39 @@ public class OrdenController {
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * Registra el pesaje inicial (tara) de una orden.
+	 * 
+	 * @param id id de la orden.
+	 * @param pesoInicial peso de la tara 
+	 * @return la orden persistida con los campos actualizados (peso inicial, fecha, contraseña, estado)
+	 * @throws NotFoundException si no existe la orden con el id dado.
+	 * @throws BusinessException si la orden no está en el estado esperado o si ocurre un error no previsto
+	 */
+	@PostMapping(value = "/{id}/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> registrarTara(@PathVariable("id") long id, @RequestBody Map<String, Object> body) {
+		try {
+			if (body == null || !body.containsKey("pesoInicial")) {
+				return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, null, "Debe enviar 'pesoInicial' en el cuerpo"), HttpStatus.BAD_REQUEST);
+			}
+
+			double pesoInicial;
+			try {
+				pesoInicial = Double.parseDouble(body.get("pesoInicial").toString());
+			} catch (Exception e) {
+				return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, "pesoInicial inválido"), HttpStatus.BAD_REQUEST);
+			}
+
+			Orden orden = ordenBusiness.registrarTara(id, pesoInicial);
+			return new ResponseEntity<>(orden, HttpStatus.OK);
+
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
