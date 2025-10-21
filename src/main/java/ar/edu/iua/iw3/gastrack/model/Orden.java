@@ -126,5 +126,20 @@ public class Orden {
 
     @OneToMany(mappedBy = "orden")
     private Set<Detalle> detalles;
+    
 
+    public void siguienteEstado() {
+        switch (this.estado) {
+            case PENDIENTE_PESAJE_INICIAL:
+                this.estado = Estado.PESAJE_INICIAL_REGISTRADO;
+            case PESAJE_INICIAL_REGISTRADO:
+                this.estado = Estado.ORDEN_CERRADA_PARA_CARGA;
+            case ORDEN_CERRADA_PARA_CARGA:
+                this.estado = Estado.PESAJE_FINAL_REGISTRADO;
+            case PESAJE_FINAL_REGISTRADO:
+                this.estado = Estado.ORDEN_CANCELADA;
+            default:
+                break;
+        }
+    }
 }
