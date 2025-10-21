@@ -30,10 +30,10 @@ public class OrdenBusiness implements IOrdenBusiness {
      * @throws NotFoundException Si no se encuentran ordenes con el estado especificado
      */
     @Override
-    public List<Orden> listByStatus(String status) throws BusinessException, NotFoundException {
+    public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException {
         Optional<List<Orden>> o;
         try {
-            o = ordenDAO.findAllByStatus(status);
+            o = ordenDAO.findAllByEstado(status);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
@@ -76,6 +76,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      */
     @Override
     public Orden add(Orden orden) throws FoundException, BusinessException {
+        
         try {
             load(orden.getId());
             throw FoundException.builder().message("Se encontró la orden de numero" + orden.getId()).build();

@@ -7,6 +7,15 @@ import org.springframework.stereotype.Repository;
 
 import ar.edu.iua.iw3.gastrack.model.Producto;
 
+/*
+ * Repositorio para la entidad Producto
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-10-21
+ */
+
 @Repository
 public interface ProductoRepository  extends JpaRepository<Producto,Long>
 {

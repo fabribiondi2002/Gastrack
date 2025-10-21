@@ -4,7 +4,10 @@ package ar.edu.iua.iw3.gastrack.model;
 import java.util.Date;
 import java.util.Set;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -58,15 +61,24 @@ public class Orden {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column()
+    private Estado estado;
 
     public enum Estado {
+        ORDEN_CREADA,
+        ORDEN_CANCELADA,
+        PESO_INICIAL_REGISTRADO,
+        ORDEN_CERRADA,
+        PESO_FINAL_REGISTRADO
     }
 
-    private Double preset;
+    private double preset;
 
-    private Double pesoInicial;
-    private Double pesoFinal;
+    private double pesoInicial;
+    private double pesoFinal;
     private Date fechaPesajeInicial;
     private Date fechaPesajeFinal;
 
@@ -74,10 +86,10 @@ public class Orden {
     private Date fechaInicioCarga;
     private Date fechaFinCarga;
 
-    private Double ultimaMasaAcumulada;
-    private Double ultimaDensidad;
-    private Double ultimaTemperatura;
-    private Double ultimoCaudal;
+    private double ultimaMasaAcumulada;
+    private double ultimaDensidad;
+    private double ultimaTemperatura;
+    private double ultimoCaudal;
     private Date fechaUltimoMedicion;
 
     @ManyToOne

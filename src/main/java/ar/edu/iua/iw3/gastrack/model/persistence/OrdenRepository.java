@@ -8,7 +8,21 @@ import org.springframework.stereotype.Repository;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
 
+/*
+ * Repositorio para la entidad Orden
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-10-21
+ */
+
 @Repository
 public interface OrdenRepository extends JpaRepository<Orden,Long>{
-    Optional <List<Orden>> findAllByStatus(String status);
+    /*
+     * Buscar ordenes por estado
+     * @param status Estado de la orden
+     * @return Lista de ordenes con el estado especificado
+     */
+    Optional <List<Orden>> findAllByEstado(Orden.Estado status);
 }

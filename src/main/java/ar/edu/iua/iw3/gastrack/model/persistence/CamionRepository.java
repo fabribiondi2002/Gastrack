@@ -6,6 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import ar.edu.iua.iw3.gastrack.model.Camion;
+/*
+ * Repositorio para la entidad Camion
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-10-21
+ */
 
 @Repository
 public interface CamionRepository extends JpaRepository<Camion, Long> {

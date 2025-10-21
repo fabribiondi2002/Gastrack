@@ -10,6 +10,7 @@ import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.inteface.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +30,8 @@ public class DetalleBusiness implements IDetalleBusiness{
     
     @Autowired
 	private DetalleRepository detalleDAO;
+    @Autowired
+	private OrdenBusiness ordenBusiness;
 
     /**
      * Listar todos los detalles
@@ -142,5 +145,35 @@ public class DetalleBusiness implements IDetalleBusiness{
 			throw BusinessException.builder().ex(e).build();
 		}
     }
+
+    /*
+     * Obtener detalles por id de orden
+     * @param ordenId Id de la orden
+     * @return Lista de detalles
+     * @throws NotFoundException Si no se encuentra la orden o no hay detalles para la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     */
+
+    @Override
+    public List<Detalle> loadByOrdenId(long ordenId) throws NotFoundException, BusinessException {
+        Optional<List<Detalle>> r;
+        try {
+            ordenBusiness.load(ordenId);
+        } catch (NotFoundException e) {
+            throw NotFoundException.builder().message("No se encuentra la orden id=" + ordenId).build();
+        }
+        try {
+            r = detalleDAO.findAllByOrden_id(ordenId);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (r.isEmpty() || r.get().isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentran detalles para la orden id=" + ordenId).build();
+        }
+        return r.get();
+    }
+
+    
 
 }

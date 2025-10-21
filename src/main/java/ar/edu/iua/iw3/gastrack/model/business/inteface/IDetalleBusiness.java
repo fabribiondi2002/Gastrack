@@ -1,4 +1,4 @@
-package ar.edu.iua.iw3.gastrack.model.business;
+package ar.edu.iua.iw3.gastrack.model.business.inteface;
 
 import java.util.List;
 
@@ -27,5 +27,7 @@ public interface IDetalleBusiness {
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
 
 	public void delete(long id) throws NotFoundException, BusinessException;
+
+	public List<Detalle> loadByOrdenId(long ordenId) throws NotFoundException, BusinessException;
 
 }

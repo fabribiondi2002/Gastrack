@@ -17,7 +17,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 */
 public interface IOrdenBusiness {
 
-    public List<Orden> listByStatus(String status) throws BusinessException, NotFoundException;
+    public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException;
 
     public Orden load(long id) throws NotFoundException, BusinessException;
 
