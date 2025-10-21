@@ -10,7 +10,7 @@ import ar.edu.iua.iw3.gastrack.model.Camion;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.inteface.ICamionBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.CamionRepository;
 import lombok.extern.slf4j.Slf4j;
 

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.inteface.IDetalleBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
 /*

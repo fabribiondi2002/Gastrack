@@ -1,4 +1,4 @@
-package ar.edu.iua.iw3.gastrack.model.business.inteface;
+package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 
 import java.util.List;
 

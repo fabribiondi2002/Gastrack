@@ -30,6 +30,10 @@ import lombok.Setter;
  * @param producto El producto asociado a la orden.
  * @param cliente El cliente asociado a la orden.
  * @param detalles Arreglo de los detalles de la orden.
+ * @param id Identificador único de la orden.
+ * @param numeroOrden Número único de la orden.
+ * @param estado Estado actual de la orden.
+ * @param contrasenaActivacion Contraseña de activación de la orden.
  * @param preset Volumen a cargar de la orden.
  * @param pesoInicial Peso inicial del camión.
  * @param pesoFinal Peso final del camión.
@@ -63,6 +67,9 @@ public class Orden {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(nullable = false, unique = true)
+    private String numeroOrden;
+
     @Enumerated(EnumType.STRING)
     @Column()
     private Estado estado;
@@ -74,7 +81,9 @@ public class Orden {
         ORDEN_CERRADA,
         PESO_FINAL_REGISTRADO
     }
-
+    @Column(unique = true)
+    private long contrasenaActivacion;
+    @Column(nullable = false)
     private double preset;
 
     private double pesoInicial;

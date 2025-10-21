@@ -1,4 +1,4 @@
-package ar.edu.iua.iw3.gastrack.model.business.inteface;
+package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 
 import java.util.List;
 
@@ -27,5 +27,6 @@ public interface IOrdenBusiness {
 
     public void delete(long id) throws NotFoundException, BusinessException;
 
-    
+    public Orden loadByNumeroOrden(String numeroOrden) throws NotFoundException, BusinessException;
+
 }

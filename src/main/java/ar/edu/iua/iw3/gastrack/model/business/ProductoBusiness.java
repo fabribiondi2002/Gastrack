@@ -9,7 +9,7 @@ import ar.edu.iua.iw3.gastrack.model.Producto;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.inteface.IProductoBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.ProductoRepository;
 import lombok.extern.slf4j.Slf4j;
 

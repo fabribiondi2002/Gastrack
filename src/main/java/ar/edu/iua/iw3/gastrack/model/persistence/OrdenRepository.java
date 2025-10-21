@@ -25,4 +25,11 @@ public interface OrdenRepository extends JpaRepository<Orden,Long>{
      * @return Lista de ordenes con el estado especificado
      */
     Optional <List<Orden>> findAllByEstado(Orden.Estado status);
+
+    /*
+     * Buscar una orden por su numero de orden
+     * @param numeroOrden Numero de la orden
+     * @return Orden con el numero especificado
+     */
+    Optional<Orden> findByNumeroOrden(String numeroOrden);
 }

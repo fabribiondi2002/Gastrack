@@ -10,7 +10,7 @@ import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.inteface.IOrdenBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,6 +66,20 @@ public class OrdenBusiness implements IOrdenBusiness {
         return o.get();
     }
 
+    @Override
+    public Orden loadByNumeroOrden(String numeroOrden) throws NotFoundException, BusinessException {
+        Optional<Orden> o;
+        try {
+            o = ordenDAO.findByNumeroOrden(numeroOrden);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (o.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
+        }
+        return o.get();
+    }
 
     /**
      * Añade una orden
@@ -82,6 +96,12 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw FoundException.builder().message("Se encontró la orden de numero" + orden.getId()).build();
         } catch (NotFoundException e) {
 
+        }
+        try {
+            loadByNumeroOrden(orden.getNumeroOrden());
+            throw FoundException.builder().message("Se encontró la orden de numero" + orden.getNumeroOrden()).build();
+        } catch (NotFoundException e) {
+            
         }
         try {
             return ordenDAO.save(orden);
