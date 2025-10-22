@@ -3,9 +3,11 @@ package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 import java.util.List;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BadPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 
 /** 
  * Interfaz para la logica de negocio de ordenes 
@@ -32,5 +34,8 @@ public interface IOrdenBusiness {
     public Orden loadByCodigoExterno(String codigoExterno) throws NotFoundException, BusinessException;
     
     public Orden addExternal(String json) throws FoundException, BusinessException;
+
+    public Orden habilitarCarga(long numeroOrden, long contrasenaActivacion) throws NotFoundException, BusinessException,
+        OrderInvalidStateException, BadPasswordException;
 
 }
