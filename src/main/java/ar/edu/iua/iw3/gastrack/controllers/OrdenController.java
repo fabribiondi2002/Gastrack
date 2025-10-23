@@ -12,15 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
-import ar.edu.iua.iw3.gastrack.model.business.exception.BadPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
@@ -143,34 +140,6 @@ public class OrdenController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-		}
-	}
-
-	/**
-	 * Habilitar la carga de una orden
-	 * @param numeroOrden
-	 * @param contrasenaActivacion
-	 * @return ResponseEntity con el estado de la operacion
-	 */
-	@PostMapping(value = "/habilitar-carga", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> habilitarCarga(
-		@RequestParam(name="orden", required =true) long numeroOrden,
-		@RequestParam(name="contraseña", required =true) long contrasenaActivacion
-	)
-	{
-		try {
-			ordenBusiness.habilitarCarga(numeroOrden, contrasenaActivacion);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (BusinessException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (NotFoundException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-		}
-		catch (OrderInvalidStateException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
-		} catch (BadPasswordException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()), HttpStatus.UNAUTHORIZED);
 		}
 	}
 	

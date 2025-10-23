@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
-import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
-import ar.edu.iua.iw3.gastrack.model.business.exception.BadPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -196,38 +193,6 @@ public class OrdenBusiness implements IOrdenBusiness {
     public Orden addExternal(String json) throws FoundException, BusinessException {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addExternal'");
-    }
-
-    /**
-     * Habilita la carga de una orden si se encuentra en el estado PESAJE_INICIAL_REGISTRADO
-     * y la contraseña de activación es correcta.
-     * @param numeroOrden Número de la orden a habilitar.
-     * @param contrasenaActivacion Contraseña de activación de la orden.
-     * @return Orden habilitada para carga.
-     * @throws NotFoundException Si no existe una orden con ese número.
-     * @throws BusinessException Si ocurre un error no previsto.
-     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO.
-     * @throws BadPasswordException Si la contraseña de activación es incorrecta.
-     */
-    @Override
-    public Orden habilitarCarga(long numeroOrden, long contrasenaActivacion)
-        throws NotFoundException, BusinessException, OrderInvalidStateException, BadPasswordException
-    { 
-        Orden o = loadByNumeroOrden(numeroOrden);
-        
-        if(o.getEstado().equals(Estado.PESAJE_INICIAL_REGISTRADO))
-        {
-            if(o.getContrasenaActivacion() != contrasenaActivacion)
-            {
-                throw BadPasswordException.builder().message("Contraseña de activacion incorrecta").build();
-            }
-
-            o.setHabilitadoParaCarga(true);
-            return ordenDAO.save(o);
-        }
-
-        throw OrderInvalidStateException.builder()
-            .message("La orden no se encuentra en estado PESAJE_INICIAL_REGISTRADO").build();
     }
 
 }

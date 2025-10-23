@@ -91,7 +91,6 @@ public class Orden {
     @Column(unique = true, length = 5)
     private long contrasenaActivacion;
 
-    private boolean habilitadoParaCarga = false;
     
     @Column(nullable = false)
     private double preset;

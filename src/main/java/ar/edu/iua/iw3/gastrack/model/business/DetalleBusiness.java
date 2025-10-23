@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
@@ -81,19 +82,60 @@ public class DetalleBusiness implements IDetalleBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public Detalle add(Detalle detalle) throws FoundException, BusinessException{
-        try {
+	public Detalle add(Detalle detalle) throws FoundException, BusinessException, InvalidDetailException{
+        try
+        {
 			load(detalle.getId());
-			throw FoundException.builder().message("Se encuentró el detalle id=" + detalle.getId()).build();
+			throw FoundException.builder().message("Se encuentró el detalle id: " + detalle.getId()).build();
 		} catch (NotFoundException e) {
 		}
 
-		try {
+        Optional<Detalle> detalleFiltrado = filtradoDeDetalles(detalle);
+        
+        if(detalleFiltrado.isEmpty())
+        {
+            throw InvalidDetailException.builder().message("El detalle no cumple con los criterios de aceptacion").build();      
+        }
+
+		try 
+        {
 			return detalleDAO.save(detalle);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw BusinessException.builder().ex(e).build();
 		}
+    }
+
+    
+    /**
+     * Logica de filtrado de detalles
+     * Solo detalles con caudal > 0 y masa acumulada valida son aceptados.
+     * @param d detalle a filtrar
+     * @return detalle si pasa el filtro, Optional.empty() si no pasa
+     * @throws BusinessException Si ocurre un error no previsto
+     */
+    private Optional<Detalle> filtradoDeDetalles(Detalle d) throws BusinessException
+    {
+        if(!(d.getCaudal() <=0))
+        {
+            try
+            {
+                Optional<Detalle> last = detalleDAO.findFirstByFechaDesc();
+                if(!last.isEmpty())
+                {
+                    if(!(d.getMasaAcumulada() <= 0 || d.getMasaAcumulada()< last.get().getMasaAcumulada()))
+                    {
+                        return Optional.of(d);
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                throw BusinessException.builder().ex(e).build();
+            }
+        }
+        
+        return Optional.empty();
     }
 
     /**
