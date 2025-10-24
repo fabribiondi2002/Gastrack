@@ -6,6 +6,7 @@ import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 
 /** 
@@ -23,7 +24,7 @@ public interface IDetalleBusiness {
 
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
-	public Detalle add(Detalle detalle) throws NotFoundException, BusinessException, InvalidDetailException;
+	public Detalle add(Detalle detalle) throws NotFoundException, BusinessException, InvalidDetailException, InvalidDetailFrecuencyException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
 
