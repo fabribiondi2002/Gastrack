@@ -5,7 +5,10 @@ import java.util.List;
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 
 /** 
  * Interfaz para la logica de negocio de los detalles 
@@ -22,7 +25,8 @@ public interface IDetalleBusiness {
 
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
-	public Detalle add(Detalle detalle) throws FoundException, BusinessException;
+	public Detalle add(String json) throws NotFoundException, BusinessException, InvalidDetailException,
+		InvalidDetailFrecuencyException, OrderInvalidStateException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
 

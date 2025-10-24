@@ -25,4 +25,11 @@ public interface DetalleRepository extends JpaRepository<Detalle, Long> {
      * @throws NotFoundException Si no se encuentran detalles para la orden
      */
     Optional <List<Detalle>> findAllByOrden_id(Long orden);
+
+    /**
+     * Filtrar por el ID de la Orden directamente.
+     * @param ordenId El ID de la Orden por la cual se debe filtrar.
+     * @return El detalle más reciente asociado a ese ID de orden.
+     */
+    Optional<Detalle> findTopByOrdenIdOrderByFechaDesc(long ordenId);
 }
