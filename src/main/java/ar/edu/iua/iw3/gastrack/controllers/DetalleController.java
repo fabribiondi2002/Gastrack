@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -8,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +17,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
@@ -51,9 +52,9 @@ public class DetalleController {
 	}
 
 	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> add(@RequestBody Detalle detalle) {
+	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
 		try {
-			Detalle response = detalleBusiness.add(detalle);
+			Detalle response = detalleBusiness.add(httpEntity.getBody());
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_DETALLE + "/" + response.getId());
 			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
@@ -67,6 +68,9 @@ public class DetalleController {
 		}
 		catch (InvalidDetailFrecuencyException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.TOO_MANY_REQUESTS, e, e.getMessage()), HttpStatus.TOO_MANY_REQUESTS);
+		}
+		catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
 }

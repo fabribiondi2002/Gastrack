@@ -8,15 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ar.edu.iua.iw3.gastrack.model.Detalle;
+import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
+import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
+import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -82,19 +88,44 @@ public class DetalleBusiness implements IDetalleBusiness{
 
      /**
      * Agregar un detalle
-     * 
+     * Se implementa deserializador personalizado para validar el JSON de entrada
+     * @see DetalleJsonDeserializer
      * @param detalle detalle a agregar
      * @return detalle agregado
      * @throws FoundException    Si ya existe un detalle con el mismo id 
      * @throws BusinessException Si ocurre un error no previsto
+     * @throws InvalidDetailException Si el detalle no cumple los criterios de aceptacion
+     * @throws InvalidDetailFrecuencyException Si el detalle no cumple con la frecuencia de muestreo
+     * @throws OrderInvalidStateException Si la orden no se encuentra en estado valido para agregar detalles
      */
 
     @Override
-	public Detalle add(Detalle detalle)
-        throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException
+	public Detalle add(String json)
+        throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException,
+        OrderInvalidStateException
     {
-        
-		ordenBusiness.load(detalle.getOrden().getId());
+        //deserializador
+        ObjectMapper mapper = JsonUtiles.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
+        Detalle detalle = null;
+        try
+        {
+            detalle = mapper.readValue(json, Detalle.class);
+        }
+        catch (Exception e)
+        {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        } 
+        Orden ord = ordenBusiness.loadByNumeroOrden(detalle.getOrden().getNumeroOrden());
+        if(!ord.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO))
+        {
+            log.warn("Se intento registrar detalles en una operacion con estado: " + ord.getEstado());
+            throw OrderInvalidStateException.builder()
+                .message("No se puede agregar detalle a la orden id="+ord.getId()+" en estado "+ord.getEstado())
+                .build();
+        }
+
+        detalle.setOrden(ord);
         detalle.setFecha(new Date());
         DetalleManager.manage(detalleDAO, detalle,frecuenciaMuestreoMilis);
 		return detalleDAO.save(detalle);
@@ -102,7 +133,7 @@ public class DetalleBusiness implements IDetalleBusiness{
 
 
     /**
-     * Actualizar un detalle
+     * Actualizar un detalle si la orden se encuentra en estado valido
      * 
      * @param detalle detalle a actualizar
      * @return detalle actualizado
