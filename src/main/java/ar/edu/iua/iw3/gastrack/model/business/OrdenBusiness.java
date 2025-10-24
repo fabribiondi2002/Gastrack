@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
@@ -209,43 +210,58 @@ public class OrdenBusiness implements IOrdenBusiness {
      *         algun error no previsto
      */
     @Override
-    public Orden registrarTara(long id, double pesoInicial) throws NotFoundException, BusinessException {
+    public Orden registrarTara(long numeroOrden, double pesoInicial) throws NotFoundException, BusinessException {
         try {
-            Optional<Orden> or = ordenDAO.findById(id);
+            Optional<Orden> or = ordenDAO.findByNumeroOrden(numeroOrden);
             if (!or.isPresent()) {
-                throw NotFoundException.builder().message("No se encontró la orden con id " + id).build();
+                throw NotFoundException.builder().message("No se encontró la orden numero " + numeroOrden ).build();
             }
 
             Orden orden = or.get();
 
             // Valida estado actual
-            if (orden.getEstado() != Orden.Estado.PENDIENTE_PESAJE_INICIAL) {
-                throw BusinessException.builder()
-                        .message("La orden debe estar en estado PENDIENTE_PESAJE_INICIAL para registrar la tara. Estado actual: "
-                                + (orden.getEstado() != null ? orden.getEstado().name() : "NULL"))
-                        .build();
-            }
+            validarEstado(orden, Estado.PENDIENTE_PESAJE_INICIAL);
 
             // Registra valores de pesaje inicial
             orden.setPesoInicial(pesoInicial);
             orden.setFechaPesajeInicial(new Date());
 
-            // contraseña de 5 digitos
-            int clave = ThreadLocalRandom.current().nextInt(10000, 100000);
-            orden.setContrasenaActivacion(clave);
+            orden.setContrasenaActivacion(generarContrasenaActivacion());
 
             // Cambia estado
-            orden.setEstado(Orden.Estado.PESAJE_INICIAL_REGISTRADO);
-
+            orden.siguienteEstado();
             return ordenDAO.save(orden);
 
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (BusinessException e) {
+        } catch (NotFoundException | BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).message("Error al registrar la tara").build();
         }
     }
+
+    /*
+     * Valida el estado actual de la orden
+     */
+    private void validarEstado(Orden orden, Estado... estadosValidos) throws BusinessException {
+        for (Estado e : estadosValidos) {
+            if (orden.getEstado() == e) return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Estado e : estadosValidos) sb.append(e.name()).append(" ");
+        throw BusinessException.builder()
+                .message("Estado inválido. Estado actual: "
+                        + (orden.getEstado() != null ? orden.getEstado().name() : "NULL")
+                        + ". Estados válidos: " + sb.toString().trim())
+                .build();
+    }
+
+    /*
+     * genera una contraseña de activacion de 5 digitos
+     * @return contraseña como entero
+     */
+    private int generarContrasenaActivacion() {
+        return ThreadLocalRandom.current().nextInt(10000, 100000);
+    }
+
 }

@@ -132,12 +132,16 @@ public class Orden {
         switch (this.estado) {
             case PENDIENTE_PESAJE_INICIAL:
                 this.estado = Estado.PESAJE_INICIAL_REGISTRADO;
+                break;
             case PESAJE_INICIAL_REGISTRADO:
                 this.estado = Estado.ORDEN_CERRADA_PARA_CARGA;
+                break;
             case ORDEN_CERRADA_PARA_CARGA:
                 this.estado = Estado.PESAJE_FINAL_REGISTRADO;
+                break;
             case PESAJE_FINAL_REGISTRADO:
                 this.estado = Estado.ORDEN_CANCELADA;
+                break;
             default:
                 break;
         }

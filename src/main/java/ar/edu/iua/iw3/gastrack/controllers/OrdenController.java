@@ -145,36 +145,35 @@ public class OrdenController {
 	}
 
 	/**
-	 * Registra el pesaje inicial (tara) de una orden.
-	 * 
-	 * @param id id de la orden.
-	 * @param pesoInicial peso de la tara 
-	 * @return la orden persistida con los campos actualizados (peso inicial, fecha, contraseña, estado)
-	 * @throws NotFoundException si no existe la orden con el id dado.
-	 * @throws BusinessException si la orden no está en el estado esperado o si ocurre un error no previsto
-	 */
-	@PostMapping(value = "/{id}/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> registrarTara(@PathVariable("id") long id, @RequestBody Map<String, Object> body) {
-		try {
-			if (body == null || !body.containsKey("pesoInicial")) {
-				return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, null, "Debe enviar 'pesoInicial' en el cuerpo"), HttpStatus.BAD_REQUEST);
-			}
+     * Registra el pesaje inicial (tara) de una orden por su numeroOrden.
+     *
+     * @param numeroOrden numero de la orden
+     * @param body mapa JSON que debe contener "pesoInicial"
+     * @return la orden persistida con los campos actualizados
+     */
+    @PostMapping(value = "/{numeroOrden}/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> registrarTara(@PathVariable("numeroOrden") long numeroOrden,
+                                           @RequestBody Map<String, Object> body) {
+        try {
+            if (body == null || !body.containsKey("pesoInicial")) {
+                return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, null, "Debe enviar 'pesoInicial' en el cuerpo"), HttpStatus.BAD_REQUEST);
+            }
 
-			double pesoInicial;
-			try {
-				pesoInicial = Double.parseDouble(body.get("pesoInicial").toString());
-			} catch (Exception e) {
-				return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, "pesoInicial inválido"), HttpStatus.BAD_REQUEST);
-			}
+            double pesoInicial;
+            try {
+                pesoInicial = Double.parseDouble(body.get("pesoInicial").toString());
+            } catch (Exception e) {
+                return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, "pesoInicial inválido"), HttpStatus.BAD_REQUEST);
+            }
 
-			Orden orden = ordenBusiness.registrarTara(id, pesoInicial);
-			return new ResponseEntity<>(orden, HttpStatus.OK);
+            Orden orden = ordenBusiness.registrarTara(numeroOrden, pesoInicial);
+            return new ResponseEntity<>(orden, HttpStatus.OK);
 
-		} catch (BusinessException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (NotFoundException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-		}
-	}
+        } catch (BusinessException e) {
+            return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+        }
+    }
 
 }
