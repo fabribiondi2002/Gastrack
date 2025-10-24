@@ -82,13 +82,9 @@ public class DetalleBusiness implements IDetalleBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public Detalle add(Detalle detalle) throws FoundException, BusinessException, InvalidDetailException{
-        try
-        {
-			load(detalle.getId());
-			throw FoundException.builder().message("Se encuentró el detalle id: " + detalle.getId()).build();
-		} catch (NotFoundException e) {
-		}
+	public Detalle add(Detalle detalle) throws NotFoundException, BusinessException, InvalidDetailException{
+        
+		ordenBusiness.load(detalle.getOrden().getId());
 
         Optional<Detalle> detalleFiltrado = filtradoDeDetalles(detalle);
         
@@ -118,22 +114,30 @@ public class DetalleBusiness implements IDetalleBusiness{
     {
         if(!(d.getCaudal() <=0))
         {
-            try
+            if(!(d.getMasaAcumulada() <= 0))
             {
-                Optional<Detalle> last = detalleDAO.findFirstByFechaDesc();
-                if(!last.isEmpty())
+                try
                 {
-                    if(!(d.getMasaAcumulada() <= 0 || d.getMasaAcumulada()< last.get().getMasaAcumulada()))
+                    Optional<Detalle> last = detalleDAO.findFirstByOrderByFechaDesc();
+                    if(!last.isEmpty()) // hay mediciones previas
                     {
-                        return Optional.of(d);
+                        if(d.getMasaAcumulada()< last.get().getMasaAcumulada())
+                        {
+                            return Optional.empty();
+                        }
                     }
+
+                    return Optional.of(d);
+                }
+                catch(Exception e)
+                {
+                    throw BusinessException.builder().ex(e).build();
                 }
             }
-            catch(Exception e)
-            {
-                throw BusinessException.builder().ex(e).build();
-            }
+            
         }
+
+        log.trace("Detalle no paso el filtrado: Caudal: "+d.getCaudal()+", MasaAcumulada="+d.getMasaAcumulada());
         
         return Optional.empty();
     }
@@ -188,7 +192,7 @@ public class DetalleBusiness implements IDetalleBusiness{
 		}
     }
 
-    /*
+    /**
      * Obtener detalles por id de orden
      * @param ordenId Id de la orden
      * @return Lista de detalles

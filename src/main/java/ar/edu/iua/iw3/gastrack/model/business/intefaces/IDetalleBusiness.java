@@ -23,7 +23,7 @@ public interface IDetalleBusiness {
 
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
-	public Detalle add(Detalle detalle) throws FoundException, BusinessException, InvalidDetailException;
+	public Detalle add(Detalle detalle) throws NotFoundException, BusinessException, InvalidDetailException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
 

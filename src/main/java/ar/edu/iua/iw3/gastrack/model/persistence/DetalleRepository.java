@@ -26,5 +26,5 @@ public interface DetalleRepository extends JpaRepository<Detalle, Long> {
      */
     Optional <List<Detalle>> findAllByOrden_id(Long orden);
 
-    Optional<Detalle> findFirstByFechaDesc();
+    Optional<Detalle> findFirstByOrderByFechaDesc();
 }
