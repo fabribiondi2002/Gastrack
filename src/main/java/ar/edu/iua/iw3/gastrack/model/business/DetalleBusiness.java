@@ -96,7 +96,6 @@ public class DetalleBusiness implements IDetalleBusiness{
         
 		ordenBusiness.load(detalle.getOrden().getId());
         detalle.setFecha(new Date());
-        log.trace("Detalle que se intenta cargar:" + detalle.getFecha());
         DetalleManager.manage(detalleDAO, detalle,frecuenciaMuestreoMilis);
 		return detalleDAO.save(detalle);
     }

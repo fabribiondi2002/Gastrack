@@ -50,7 +50,7 @@ public final class DetalleManager {
         
         if(!last.isEmpty()) // hay mediciones previas
         {
-            filtradoDeDetalles(dDAO,d,last.get());
+            filtradoDeDetalles(d,last.get());
             controlFrecuencia(d.getFecha(), last.get().getFecha(), frecuenciaMilis);
         }     
         
@@ -59,12 +59,11 @@ public final class DetalleManager {
     /**
      * Logica de filtrado de detalles
      * Solo detalles con caudal > 0 y masa acumulada valida son aceptados.
-     * @param dDao DAO de entidad Detalle
      * @param d Detalle actual
      * @param last Detalle previo
      * @throws InvalidDetailException si el detalle no cumple los criterios de aceptacion
      */
-    private static void filtradoDeDetalles(DetalleRepository dDao,Detalle d,Detalle last)
+    private static void filtradoDeDetalles(Detalle d,Detalle last)
         throws InvalidDetailException
     {
         if(d.getCaudal() <=0 || d.getMasaAcumulada() <= 0 || d.getMasaAcumulada() < last.getMasaAcumulada())
