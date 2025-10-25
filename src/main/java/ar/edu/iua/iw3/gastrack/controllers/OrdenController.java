@@ -23,7 +23,9 @@ import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
 import java.util.Map;
 
-/*
+import java.util.Map;
+
+/**
  * Controlador REST para la gestion de ordenes
  * @author Leandro Biondi
  * @author Benjamin Vargas
@@ -43,7 +45,8 @@ public class OrdenController {
 	private IStandardResponseBusiness response;
 
 
-	/* Listar ordenes por estado 
+	/**
+	 * Listar ordenes por estado 
 	 * @param status Estado de la orden
 	 * @return Lista de ordenes
 	 * @throws NotFoundException Si no se encuentran ordenes con el estado especificado
@@ -61,7 +64,7 @@ public class OrdenController {
 		}
 	}
 
-	/*
+	/**
 	 * Obtener una orden por id
 	 * @param id Id de la orden
 	 * @return Orden cargada
@@ -80,7 +83,7 @@ public class OrdenController {
 		}
 	}
 
-	/*
+	/**
 	 * Actualizar una orden
 	 * @param orden Orden a actualizar
 	 * @throws NotFoundException Si no existe una orden con ese id
@@ -111,7 +114,7 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
-/*
+	/**
 	 * Agregar una nueva orden
 	 * @param orden Orden a agregar
 	 * @return Orden agregada

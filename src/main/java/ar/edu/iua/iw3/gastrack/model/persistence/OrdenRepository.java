@@ -19,21 +19,21 @@ import ar.edu.iua.iw3.gastrack.model.Orden;
 
 @Repository
 public interface OrdenRepository extends JpaRepository<Orden,Long>{
-    /*
+    /**
      * Buscar ordenes por estado
      * @param status Estado de la orden
      * @return Lista de ordenes con el estado especificado
      */
     Optional <List<Orden>> findAllByEstado(Orden.Estado status);
 
-    /*
+    /**
      * Buscar una orden por su numero de orden
      * @param numeroOrden Numero de la orden
      * @return Orden con el numero especificado
      */
     Optional<Orden> findByNumeroOrden(long numeroOrden);
 
-    /*
+    /**
      * Buscar una orden por su codigo externo
      * @param codigoExterno Codigo externo de la orden
      * @return Orden con el codigo externo especificado

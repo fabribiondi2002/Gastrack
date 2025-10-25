@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.model;
 
 
+import java.beans.Transient;
 import java.util.Date;
 import java.util.Set;
 
@@ -89,6 +90,7 @@ public class Orden {
 
     @Column(unique = true, length = 5)
     private long contrasenaActivacion;
+
     
     @Column(nullable = false)
     private double preset;
@@ -127,7 +129,7 @@ public class Orden {
     @OneToMany(mappedBy = "orden")
     private Set<Detalle> detalles;
     
-
+    @Transient
     public void siguienteEstado() {
         switch (this.estado) {
             case PENDIENTE_PESAJE_INICIAL:

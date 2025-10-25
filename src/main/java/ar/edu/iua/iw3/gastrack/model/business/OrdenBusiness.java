@@ -26,7 +26,7 @@ public class OrdenBusiness implements IOrdenBusiness {
     private OrdenRepository ordenDAO;
 
 
-    /*
+    /**
      * Listar todas las ordenes por estado
      * @param status Estado de las ordenes a listar
      * @return Lista de ordenes
@@ -122,7 +122,7 @@ public class OrdenBusiness implements IOrdenBusiness {
     }
     
     
-     /*
+     /**
      * Obtener un orden por id
      * 
      * @param id Id del orden
@@ -142,7 +142,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         
     }
 
-    /*
+    /**
      * Eliminar una orden por id
      * 
      * @param id Id de la orden
@@ -165,7 +165,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         }
     }
 
-    /*
+    /**
      * Obtener una orden por su codigo externo
      * @param codigoExterno Codigo externo de la orden
      * @return Orden cargada
