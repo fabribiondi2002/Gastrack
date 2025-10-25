@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
-import java.util.Map;
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -147,24 +148,31 @@ public class OrdenController {
 	}
 
 	/**
-     * Registra el pesaje inicial (tara) de una orden por su numeroOrden.
-     *
-     * @param numeroOrden numero de la orden
-     * @param body mapa JSON que debe contener "pesoInicial"
-     * @return la orden persistida con los campos actualizados
-     */
-    @PostMapping(value = "/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	 * Registra la tara de una orden.
+	 *
+	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
+	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
+	 * @throws NotFoundException Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
+	 * @throws BusinessException Por errores internos de negocio.
+	 */
+    @PostMapping(value = "/tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
         try {
 
-            Long contrasenaActivacion = ordenBusiness.registrarTara(numeroOrden, pesoInicial);
-            return new ResponseEntity<Long>(contrasenaActivacion, HttpStatus.OK);
+            String contrasenaActivacion = ordenBusiness.registrarTara(httpEntity.getBody());
+            return new ResponseEntity<String>(contrasenaActivacion, HttpStatus.OK);
 
         } catch (BusinessException e) {
             return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (NotFoundException e) {
+        } catch (InvalidOrderAttributeException e){
+			 return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()), HttpStatus.BAD_REQUEST);
+		} catch (NotFoundException e) {
             return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-        }
+        } catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		}
     }
 
 }

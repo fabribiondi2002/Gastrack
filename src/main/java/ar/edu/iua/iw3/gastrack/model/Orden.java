@@ -89,7 +89,7 @@ public class Orden {
     }
 
     @Column(unique = true, length = 5)
-    private long contrasenaActivacion;
+    private String contrasenaActivacion;
 
     
     @Column(nullable = false)

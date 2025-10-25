@@ -7,7 +7,9 @@ import java.util.List;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 /** 
  * Interfaz para la logica de negocio de ordenes 
  * @author Leandro Biondi
@@ -34,6 +36,6 @@ public interface IOrdenBusiness {
     
     public Orden addExternal(String json) throws FoundException, BusinessException;
 
-    public Orden registrarTara(long numeroOrden, double pesoInicial) throws NotFoundException, BusinessException;
+    public String registrarTara(String json) throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException;
     
 }

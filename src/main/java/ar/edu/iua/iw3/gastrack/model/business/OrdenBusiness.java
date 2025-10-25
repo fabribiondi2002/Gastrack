@@ -6,17 +6,24 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
+import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.TaraDTO;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
+import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
+import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
@@ -200,68 +207,50 @@ public class OrdenBusiness implements IOrdenBusiness {
     }
 
     /**
-     * Registra el pesaje inicial (tara) para una orden identificada por su id.
+     * Registra la tara (peso inicial) de una orden a partir de un JSON recibido.
      *
-     * @param id identificador interno de la orden.
-     * @param pesoInicial peso del camion vacio (tara)
-     * @return orden actualizada luego del registro de la tara.
-     * @throws NotFoundException si no existe una orden con el id indicado.
-     * @throws BusinessException si la orden no esta en el estado esperado o ocurre
-     *         algun error no previsto
+     * @param json Cadena JSON con los datos de la tara.
+     * @return Contraseña de activación generada para la orden.
+     * @throws NotFoundException Si la orden no existe.
+     * @throws InvalidOrderAttributeException Si los datos del JSON son inválidos.
+     * @throws OrderInvalidStateException Si la orden no está en un estado válido para registrar la tara.
+     * @throws BusinessException Si ocurre un error interno durante el proceso.
      */
     @Override
-    public Orden registrarTara(long numeroOrden, double pesoInicial) throws NotFoundException, BusinessException {
+    public String registrarTara(String json) 
+        throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException {
+        
+        ObjectMapper mapper = JsonUtiles.getObjectMapper(TaraDTO.class, new TaraJsonDeserializer(TaraDTO.class), null);
+        TaraDTO tara = null;
+
         try {
-            Optional<Orden> or = ordenDAO.findByNumeroOrden(numeroOrden);
-            if (!or.isPresent()) {
-                throw NotFoundException.builder().message("No se encontró la orden numero " + numeroOrden ).build();
-            }
-
-            Orden orden = or.get();
-
-            // Valida estado actual
-            validarEstado(orden, Estado.PENDIENTE_PESAJE_INICIAL);
-
-            // Registra valores de pesaje inicial
-            orden.setPesoInicial(pesoInicial);
-            orden.setFechaPesajeInicial(new Date());
-
-            orden.setContrasenaActivacion(generarContrasenaActivacion());
-
-            // Cambia estado
-            orden.siguienteEstado();
-            return ordenDAO.save(orden);
-
-        } catch (NotFoundException | BusinessException e) {
-            throw e;
-        } catch (Exception e) {
+            tara = mapper.readValue(json, TaraDTO.class);
+        }catch(Exception e){
             log.error(e.getMessage(), e);
-            throw BusinessException.builder().ex(e).message("Error al registrar la tara").build();
+            throw BusinessException.builder().ex(e).build();
         }
-    }
 
-    /*
-     * Valida el estado actual de la orden
-     */
-    private void validarEstado(Orden orden, Estado... estadosValidos) throws BusinessException {
-        for (Estado e : estadosValidos) {
-            if (orden.getEstado() == e) return;
+        if (tara.getPesoInicial() == 0.0) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso inicial invalido").build();
         }
-        StringBuilder sb = new StringBuilder();
-        for (Estado e : estadosValidos) sb.append(e.name()).append(" ");
-        throw BusinessException.builder()
-                .message("Estado inválido. Estado actual: "
-                        + (orden.getEstado() != null ? orden.getEstado().name() : "NULL")
-                        + ". Estados válidos: " + sb.toString().trim())
-                .build();
-    }
 
-    /*
-     * genera una contraseña de activacion de 5 digitos
-     * @return contraseña como entero
-     */
-    private int generarContrasenaActivacion() {
-        return ThreadLocalRandom.current().nextInt(10000, 100000);
+        Orden orden = loadByNumeroOrden(tara.getNumeroOrden());
+        
+        if (!orden.getEstado().equals(Estado.PENDIENTE_PESAJE_INICIAL)) {
+            throw OrderInvalidStateException.builder().message("estado de orden "+ orden.getEstado()+" invalido").build();
+        }
+
+        // Registra valores de pesaje inicial
+        orden.setPesoInicial(tara.getPesoInicial());
+        orden.setFechaPesajeInicial(new Date());
+        
+        orden.setContrasenaActivacion(ContrasenaActivacionUtiles.generarContrasena());
+
+        // Cambia estado
+        orden.siguienteEstado();
+
+        update(orden);
+        return orden.getContrasenaActivacion();
     }
 
 }
