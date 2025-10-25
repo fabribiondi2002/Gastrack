@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,8 +21,6 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
-
-import java.util.Map;
 
 import java.util.Map;
 
@@ -154,23 +153,12 @@ public class OrdenController {
      * @param body mapa JSON que debe contener "pesoInicial"
      * @return la orden persistida con los campos actualizados
      */
-    @PostMapping(value = "/{numeroOrden}/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> registrarTara(@PathVariable("numeroOrden") long numeroOrden,
-                                           @RequestBody Map<String, Object> body) {
+    @PostMapping(value = "/registrar-tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
         try {
-            if (body == null || !body.containsKey("pesoInicial")) {
-                return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, null, "Debe enviar 'pesoInicial' en el cuerpo"), HttpStatus.BAD_REQUEST);
-            }
 
-            double pesoInicial;
-            try {
-                pesoInicial = Double.parseDouble(body.get("pesoInicial").toString());
-            } catch (Exception e) {
-                return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, "pesoInicial inválido"), HttpStatus.BAD_REQUEST);
-            }
-
-            Orden orden = ordenBusiness.registrarTara(numeroOrden, pesoInicial);
-            return new ResponseEntity<>(orden, HttpStatus.OK);
+            Long contrasenaActivacion = ordenBusiness.registrarTara(numeroOrden, pesoInicial);
+            return new ResponseEntity<Long>(contrasenaActivacion, HttpStatus.OK);
 
         } catch (BusinessException e) {
             return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
