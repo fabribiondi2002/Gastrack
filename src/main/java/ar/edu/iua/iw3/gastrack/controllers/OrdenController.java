@@ -77,20 +77,15 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
-<<<<<<< HEAD
-
 	/**
-	 * Actualizar una orden
-	 * @param orden Orden a actualizar
-	 * @throws NotFoundException Si no existe una orden con ese id
+	 * Obtener una orden por codigo externo
+	 * @param codigoExterno Codigo externo de la orden
+	 * @return Orden cargada
+	 * @throws NotFoundException Si no existe una orden con ese codigo externo
 	 * @throws BusinessException Si ocurre un error no previsto
 	 */
-    @PutMapping(value = "")
-	public ResponseEntity<?> update(@RequestBody Orden orden) {
-=======
 	@GetMapping(value = "/codigoExterno/{codigoExterno}")
 	public ResponseEntity<?> loadByCodigoExterno(@PathVariable String codigoExterno) {
->>>>>>> feature/crearorden
 		try {
 			return new ResponseEntity<>(ordenBusiness.loadByCodigoExterno(codigoExterno), HttpStatus.OK);
 		} catch (BusinessException e) {
@@ -125,18 +120,11 @@ public class OrdenController {
 		}
 	}
 	/**
-<<<<<<< HEAD
-	 * Agregar una nueva orden
-	 * @param orden Orden a agregar
-	 * @return Orden agregada
-	 * @throws FoundException Si ya existe una orden con ese numero
-	 * @throws BusinessException Si ocurre un error no previsto
-=======
+
 	 * Registrar una orden completa a partir de un JSON
 	 * Tiene en cuenta todos los objetos relacionados (chofer, camion, cliente, producto)
 	 * @param httpEntity Entidad HTTP que contiene el JSON de la orden
 	 * @return Respuesta HTTP con el estado de la operacion
->>>>>>> feature/crearorden
 	 */
 	@PostMapping(value = "")
 	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
