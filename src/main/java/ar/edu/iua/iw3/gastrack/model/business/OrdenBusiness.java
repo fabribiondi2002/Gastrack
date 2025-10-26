@@ -139,14 +139,7 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw BusinessException.builder().ex(e).build();
         }
     }
-<<<<<<< HEAD
-    
-    
-     /**
-=======
-
-    /*
->>>>>>> feature/crearorden
+    /**
      * Obtener un orden por id
      * 
      * @param id Id del orden
