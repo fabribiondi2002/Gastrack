@@ -24,7 +24,7 @@ public interface IClienteBusiness {
 
     public Cliente load(String razonSocial) throws NotFoundException, BusinessException;
 
-    public Cliente add(Cliente cliente) throws FoundException, BusinessException;
+    public Cliente add(Cliente cliente) throws  BusinessException;
 
     public Cliente update(Cliente cliente) throws NotFoundException, FoundException, BusinessException;
 

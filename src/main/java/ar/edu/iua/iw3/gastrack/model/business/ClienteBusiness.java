@@ -93,35 +93,29 @@ public class ClienteBusiness implements IClienteBusiness {
     }
 
     /**
-     * Agregar un cliente
+     * Agregar un cliente o lo actualiza si ya existe
      * 
      * @param cliente Cliente a agregar
-     * @return Cliente agregado
-     * @throws FoundException    Si ya existe un cliente con el mismo id o razon social
+     * @return Cliente agregado o existente
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-    public Cliente add(Cliente cliente) throws FoundException, BusinessException {
-        try {
-            load(cliente.getId());
-            throw FoundException.builder().message("Se encontró el Cliente id=" + cliente.getId()).build();
-        } catch (NotFoundException e) {
-
+public Cliente add(Cliente cliente) throws BusinessException {
+    try {
+        Optional<Cliente> existente = clienteDAO.findByRazonSocial(cliente.getRazonSocial());
+        if (existente.isPresent()) {
+            return existente.get();
         }
-        try {
-            load(cliente.getRazonSocial());
-            throw FoundException.builder().message("Se encontró el Cliente razonSocial=" + cliente.getRazonSocial())
-                    .build();
-        } catch (NotFoundException e) {
-        }
-        try {
-            return clienteDAO.save(cliente);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw BusinessException.builder().ex(e).build();
-        }
+        return clienteDAO.save(cliente);
+    } catch (Exception e) {
+        log.error("Error al agregar cliente: " + cliente.getRazonSocial(), e);
+        throw BusinessException.builder().ex(e).build();
     }
+}
 
+    
+
+    
     /**
      * Actualizar un cliente
      * 

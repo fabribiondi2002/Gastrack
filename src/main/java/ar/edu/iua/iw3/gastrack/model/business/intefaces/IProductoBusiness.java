@@ -19,7 +19,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 
 public interface IProductoBusiness {
 
-    public Producto add(Producto producto) throws BusinessException, FoundException;
+    public Producto add(Producto producto) throws BusinessException;
 
     public Producto load(long id) throws NotFoundException, BusinessException;
 
