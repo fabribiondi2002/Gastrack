@@ -101,25 +101,20 @@ public class ChoferBusiness implements IChoferBusiness {
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-    public Chofer add(Chofer chofer) throws FoundException, BusinessException {
-        try {
-            load(chofer.getId());
-            throw FoundException.builder().message("Se encontró el Chofer id=" + chofer.getId()).build();
-        } catch (NotFoundException e) {
+    public Chofer add(Chofer chofer) throws  BusinessException {
 
-        }
         try {
-            load(chofer.getDocumento());
-            throw FoundException.builder().message("Se encontró el Chofer documento=" + chofer.getDocumento()).build();
-        } catch (NotFoundException e) {
+        Optional<Chofer> existente = choferDAO.findByDocumento(chofer.getDocumento());
+        if (existente.isPresent()) {
+            return existente.get();
         }
-        try {
-            return choferDAO.save(chofer);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw BusinessException.builder().ex(e).build();
-        }
+        return choferDAO.save(chofer);
+    } catch (Exception e) {
+        log.error("Error al agregar chofer: " + chofer.getDocumento(), e);
+        throw BusinessException.builder().ex(e).build();
     }
+}
+    
 
     /**
      * Actualizar informacion de un chofer sin poder repetir documento

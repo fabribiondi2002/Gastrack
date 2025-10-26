@@ -24,7 +24,7 @@ public interface ICamionBusiness {
 
     public Camion load(String patente) throws NotFoundException, BusinessException;
 
-	public Camion add(Camion camion) throws FoundException, BusinessException;
+	public Camion add(Camion camion) throws  BusinessException;
 
 	public Camion update(Camion camion) throws FoundException, NotFoundException, BusinessException;
 

@@ -1,12 +1,14 @@
 package ar.edu.iua.iw3.gastrack.model.business;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Camion;
+import ar.edu.iua.iw3.gastrack.model.Cisterna;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
@@ -26,10 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class CamionBusiness implements ICamionBusiness{
-    
+public class CamionBusiness implements ICamionBusiness {
+
     @Autowired
-	private CamionRepository camionDAO;
+    private CamionRepository camionDAO;
 
     /**
      * Listar todos los camiones
@@ -40,11 +42,11 @@ public class CamionBusiness implements ICamionBusiness{
     @Override
     public List<Camion> list() throws BusinessException {
         try {
-			return camionDAO.findAll();
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).message(e.getMessage()).build();
-		}
+            return camionDAO.findAll();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).message(e.getMessage()).build();
+        }
     }
 
     /**
@@ -56,18 +58,18 @@ public class CamionBusiness implements ICamionBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-    public Camion load(long id) throws NotFoundException, BusinessException{
+    public Camion load(long id) throws NotFoundException, BusinessException {
         Optional<Camion> r;
-		try {
-			r = camionDAO.findById(id);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
-		if (r.isEmpty()) {
-			throw NotFoundException.builder().message("No se encuentra el camion id=" + id).build();
-		}
-		return r.get();
+        try {
+            r = camionDAO.findById(id);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (r.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentra el camion id=" + id).build();
+        }
+        return r.get();
     }
 
     /**
@@ -81,19 +83,19 @@ public class CamionBusiness implements ICamionBusiness{
     @Override
     public Camion load(String patente) throws NotFoundException, BusinessException {
         Optional<Camion> r;
-		try {
-			r = camionDAO.findByPatente(patente);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
-		if (r.isEmpty()) {
-			throw NotFoundException.builder().message("No se encuentra la patente '"+patente+"'").build();
-		}
-		return r.get();
+        try {
+            r = camionDAO.findByPatente(patente);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (r.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentra la patente '" + patente + "'").build();
+        }
+        return r.get();
     }
 
-     /**
+    /**
      * Agregar un camion
      * 
      * @param camion camion a agregar
@@ -102,24 +104,41 @@ public class CamionBusiness implements ICamionBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public Camion add(Camion camion) throws FoundException, BusinessException{
-        try {
-			load(camion.getId());
-			throw FoundException.builder().message("Se encuentró el camion id=" + camion.getId()).build();
-		} catch (NotFoundException e) {
-		}
-		try {
-			load(camion.getPatente());
-			throw FoundException.builder().message("Se encuentró el camion '" + camion.getPatente() +"'").build();
-		} catch (NotFoundException e) {
-		}
+    public Camion add(Camion camion) throws BusinessException {
 
-		try {
-			return camionDAO.save(camion);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
+        Optional<Camion> foundCamion = camionDAO.findByPatente(camion.getPatente());
+
+        if (foundCamion.isPresent()) {
+            // Camión existente → actualizar campos y cisternas
+            return updateCamionData(foundCamion.get(), camion);
+        } else {
+            // Nuevo camión → asignar camion a cisternas y guardar
+            for (Cisterna cisterna : camion.getCisternas()) {
+                cisterna.setCamion(camion);
+            }
+            return camionDAO.save(camion);
+        }
+    }
+
+    // Función auxiliar para actualizar campos y cisternas
+    private Camion updateCamionData(Camion existingCamion, Camion newCamion) throws BusinessException {
+        // Actualizar patente y descripción si cambian
+        if (!Objects.equals(existingCamion.getPatente(), newCamion.getPatente())) {
+            existingCamion.setPatente(newCamion.getPatente());
+        }
+        if (!Objects.equals(existingCamion.getDescripcion(), newCamion.getDescripcion())) {
+            existingCamion.setDescripcion(newCamion.getDescripcion());
+        }
+
+        // Limpiar cisternas antiguas y agregar nuevas
+        existingCamion.getCisternas().clear();
+        camionDAO.save(existingCamion); // Guardar para evitar TransientPropertyValueException
+        for (Cisterna cisterna : newCamion.getCisternas()) {
+            cisterna.setCamion(existingCamion);
+            existingCamion.getCisternas().add(cisterna);
+        }
+
+        return camionDAO.save(existingCamion);
     }
 
     /**
@@ -133,25 +152,25 @@ public class CamionBusiness implements ICamionBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public Camion update(Camion camion) throws FoundException, NotFoundException, BusinessException{
+    public Camion update(Camion camion) throws FoundException, NotFoundException, BusinessException {
         load(camion.getId());
-		Optional<Camion> patenteExistente=null;
-		try {
-			patenteExistente=camionDAO.findByPatenteAndIdNot(camion.getPatente(), camion.getId());
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
-		if(patenteExistente.isPresent()) {
-			throw FoundException.builder().message("Se encontró un camion="+camion.getPatente()).build();
-		}
+        Optional<Camion> patenteExistente = null;
+        try {
+            patenteExistente = camionDAO.findByPatenteAndIdNot(camion.getPatente(), camion.getId());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (patenteExistente.isPresent()) {
+            throw FoundException.builder().message("Se encontró un camion=" + camion.getPatente()).build();
+        }
 
-		try {
-			return camionDAO.save(camion);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
+        try {
+            return camionDAO.save(camion);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
     }
 
     /**
@@ -162,14 +181,14 @@ public class CamionBusiness implements ICamionBusiness{
      * @throws BusinessException Si ocurre un error no previsto
      */
     @Override
-	public void delete(long id) throws NotFoundException, BusinessException{
-       load(id);
-		try {
-			 camionDAO.deleteById(id);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
+    public void delete(long id) throws NotFoundException, BusinessException {
+        load(id);
+        try {
+            camionDAO.deleteById(id);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
     }
 
 }

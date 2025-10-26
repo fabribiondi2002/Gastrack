@@ -1,5 +1,8 @@
 package ar.edu.iua.iw3.gastrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +13,6 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,5 +52,6 @@ public class Cisterna {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_camion", nullable = false)
+    @JsonIgnore
     private Camion camion;
 }

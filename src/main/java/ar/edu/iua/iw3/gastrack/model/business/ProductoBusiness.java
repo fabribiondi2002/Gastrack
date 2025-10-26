@@ -3,6 +3,7 @@ package ar.edu.iua.iw3.gastrack.model.business;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Producto;
@@ -26,9 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ProductoBusiness implements IProductoBusiness {
-
+    @Autowired
     private ProductoRepository productoDAO;
-    
 
     /**
      * Agregar un producto
@@ -40,23 +40,16 @@ public class ProductoBusiness implements IProductoBusiness {
      */
 
     @Override
-    public Producto add(Producto producto) throws FoundException, BusinessException {
-        try {
-            load(producto.getId());
-            throw FoundException.builder().message("Se encontró el producto con id: " + producto.getId()).build();
-        } catch (NotFoundException e) {
+    public Producto add(Producto producto) throws BusinessException {
 
-        }
         try {
-            load(producto.getNombre());
-            throw FoundException.builder().message("Se encontró el producto de nombre: " + producto.getNombre())
-                    .build();
-        } catch (NotFoundException e) {
-        }
-        try {
+            Optional<Producto> existente = productoDAO.findByNombre(producto.getNombre());
+            if (existente.isPresent()) {
+                return existente.get();
+            }
             return productoDAO.save(producto);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("Error al agregar producto: " + producto.getNombre(), e);
             throw BusinessException.builder().ex(e).build();
         }
     }
@@ -110,23 +103,24 @@ public class ProductoBusiness implements IProductoBusiness {
     @Override
     public Producto update(Producto producto) throws NotFoundException, FoundException, BusinessException {
         load(producto.getId());
-		Optional<Producto> nombreExistente=null;
-		try {
-			nombreExistente=productoDAO.findByNombreAndIdNot(producto.getNombre(), producto.getId());
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
-		if(nombreExistente.isPresent()) {
-			throw FoundException.builder().message("Se encontró un producto con nombre="+producto.getNombre()).build();
-		}
+        Optional<Producto> nombreExistente = null;
+        try {
+            nombreExistente = productoDAO.findByNombreAndIdNot(producto.getNombre(), producto.getId());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (nombreExistente.isPresent()) {
+            throw FoundException.builder().message("Se encontró un producto con nombre=" + producto.getNombre())
+                    .build();
+        }
 
-		try {
-			return productoDAO.save(producto);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw BusinessException.builder().ex(e).build();
-		}
+        try {
+            return productoDAO.save(producto);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
     }
 
     @Override

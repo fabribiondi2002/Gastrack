@@ -31,6 +31,6 @@ public interface IOrdenBusiness {
 
     public Orden loadByCodigoExterno(String codigoExterno) throws NotFoundException, BusinessException;
     
-    public Orden addExternal(String json) throws FoundException, BusinessException;
+    public Orden addOrdenCompleta(String json) throws FoundException, BusinessException;
 
 }

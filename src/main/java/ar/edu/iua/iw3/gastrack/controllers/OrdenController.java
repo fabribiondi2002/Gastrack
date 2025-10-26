@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -9,8 +10,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -77,18 +76,21 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
-
-	/*
-	 * Actualizar una orden
-	 * @param orden Orden a actualizar
-	 * @throws NotFoundException Si no existe una orden con ese id
-	 * @throws BusinessException Si ocurre un error no previsto
-	 */
-    @PutMapping(value = "")
-	public ResponseEntity<?> update(@RequestBody Orden orden) {
+	@GetMapping(value = "/codigoExterno/{codigoExterno}")
+	public ResponseEntity<?> loadByCodigoExterno(@PathVariable String codigoExterno) {
 		try {
-			ordenBusiness.update(orden);
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(ordenBusiness.loadByCodigoExterno(codigoExterno), HttpStatus.OK);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		}
+	}
+	@GetMapping(value = "/numeroOrden/{numeroOrden}")
+	public ResponseEntity<?> loadByNumeroOrden(@PathVariable long numeroOrden) {
+		try {
+			return new ResponseEntity<>(ordenBusiness.loadByNumeroOrden(numeroOrden), HttpStatus.OK);
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
@@ -109,36 +111,27 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
-/*
-	 * Agregar una nueva orden
-	 * @param orden Orden a agregar
-	 * @return Orden agregada
-	 * @throws FoundException Si ya existe una orden con ese numero
-	 * @throws BusinessException Si ocurre un error no previsto
+	/**
+	 * Registrar una orden completa a partir de un JSON
+	 * Tiene en cuenta todos los objetos relacionados (chofer, camion, cliente, producto)
+	 * @param httpEntity Entidad HTTP que contiene el JSON de la orden
+	 * @return Respuesta HTTP con el estado de la operacion
 	 */
 	@PostMapping(value = "")
-	public ResponseEntity<?> add(@RequestBody Orden orden) {
+	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
 		try {
-			Orden response = ordenBusiness.add(orden);
+			Orden orden = ordenBusiness.addOrdenCompleta(httpEntity.getBody());
 			HttpHeaders responseHeaders = new HttpHeaders();
-			responseHeaders.set("location", Constants.URL_ORDEN + "/" + response.getId());
+			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
 			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (FoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.FOUND, e, e.getMessage()), HttpStatus.FOUND);
-		}
-	}
-	@GetMapping(value = "/{codCli1}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> loadByCode(@PathVariable("codCli1") String codCli1) {
-		try {
-			return new ResponseEntity<>(ordenBusiness.loadByCodigoExterno(codCli1), HttpStatus.OK);
-		} catch (BusinessException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (NotFoundException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+
 		}
 	}
 
