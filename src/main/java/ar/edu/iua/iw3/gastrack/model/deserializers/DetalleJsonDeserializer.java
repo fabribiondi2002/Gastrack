@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
-import lombok.extern.slf4j.Slf4j;
-@Slf4j
 public class DetalleJsonDeserializer extends StdDeserializer<Detalle> {
 
 

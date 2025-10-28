@@ -11,16 +11,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserealizers.OrdenDeserealizer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
+import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -235,4 +241,55 @@ public class OrdenBusiness implements IOrdenBusiness {
         return add(orden);
     }
 
+    /**
+     * Habilita una orden para carga si la contrasena de activacion es correcta
+     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
+     * @throws NotFoundException Si no existe una orden con ese numero
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
+     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra autorizada para carga
+     */
+    @Override
+    public Orden habilitarOrdenParaCarga(String json)
+            throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyAuthorizedToLoadException {
+
+        ObjectMapper mapper = JsonUtils.getObjectMapper(NOrdenPassDTO.class, new NOrdenPassJsonDeserializer(
+                NOrdenPassDTO.class), null);
+
+        NOrdenPassDTO nOrdenPassDTO;
+        try {
+            nOrdenPassDTO = mapper.readValue(json, NOrdenPassDTO.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().build();
+        }
+
+        Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
+
+        if(orden.getCargaHabilitada().equals(true)) {
+            throw OrderAlreadyAuthorizedToLoadException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " ya se encuentra autorizada para carga")
+                    .build();
+        }
+        
+        if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
+                    .build();
+        }
+
+        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
+        {
+            throw BadActivationPasswordException.builder().message("La contrasena de activacion no tiene formato valido").build();
+        }
+
+        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
+        {
+            throw BadActivationPasswordException.builder().message("La contrasena de activacion es incorrecta").build();
+        }
+
+        orden.setCargaHabilitada(true);
+        
+        return update(orden);
+    }
 }
