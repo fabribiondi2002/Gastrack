@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
 
@@ -40,7 +39,6 @@ import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.TaraDTO;
 
-import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -309,6 +307,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         return update(orden);
     }
 
+    /**
      * Registra la tara (peso inicial) de una orden a partir de un JSON recibido.
      *
      * @param json Cadena JSON con los datos de la tara.
@@ -321,8 +320,8 @@ public class OrdenBusiness implements IOrdenBusiness {
     @Override
     public String registrarTara(String json) 
         throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException {
-        
-        ObjectMapper mapper = JsonUtiles.getObjectMapper(TaraDTO.class, new TaraJsonDeserializer(TaraDTO.class), null);
+
+        ObjectMapper mapper = JsonUtils.getObjectMapper(TaraDTO.class, new TaraJsonDeserializer(TaraDTO.class), null);
         TaraDTO tara = null;
 
         try {
