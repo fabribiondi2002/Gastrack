@@ -147,7 +147,11 @@ public class OrdenController {
 		}
 	}
 	
-
+	/**
+	 * Habilitar una orden para carga
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y la contrasena de activacion
+	 * @return Respuesta HTTP con el estado de la operacion
+	 */
 	@PostMapping(value = "/habilitar-carga")
 	public ResponseEntity<?> habilitarCarga(HttpEntity<String> httpEntity) {
 		try {

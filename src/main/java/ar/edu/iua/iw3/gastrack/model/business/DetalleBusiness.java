@@ -98,6 +98,7 @@ public class DetalleBusiness implements IDetalleBusiness{
      * @throws InvalidDetailException Si el detalle no cumple los criterios de aceptacion
      * @throws InvalidDetailFrecuencyException Si el detalle no cumple con la frecuencia de muestreo
      * @throws OrderInvalidStateException Si la orden no se encuentra en estado valido para agregar detalles
+     * @throws OrderNotAuthorizedToLoadException Si la orden no esta habilitada para carga
      */
 
     @Override
