@@ -18,6 +18,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
@@ -102,7 +103,7 @@ public class DetalleBusiness implements IDetalleBusiness{
     @Override
 	public Detalle add(String json)
         throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException,
-        OrderInvalidStateException
+        OrderInvalidStateException, OrderNotAuthorizedToLoadException
     {
         //deserializador
         ObjectMapper mapper = JsonUtiles.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
@@ -117,6 +118,15 @@ public class DetalleBusiness implements IDetalleBusiness{
             throw BusinessException.builder().ex(e).build();
         } 
         Orden ord = ordenBusiness.loadByNumeroOrden(detalle.getOrden().getNumeroOrden());
+
+        if (!ord.getCargaHabilitada())
+        {
+            log.warn("Se intento registrar detalles en una operacion no habilitada para carga: " + ord.getId());
+            throw OrderNotAuthorizedToLoadException.builder()
+                .message("No se puede agregar detalle a la orden id "+ord.getId()+" ya que no esta habilitada para carga")
+                .build();
+        }
+
         if(!ord.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO))
         {
             log.warn("Se intento registrar detalles en una operacion con estado: " + ord.getEstado());

@@ -13,20 +13,20 @@ import lombok.NoArgsConstructor;
  */
 
 @NoArgsConstructor
-public class BadPasswordException extends Exception {
+public class BadActivationPasswordException extends Exception {
 
     @Builder
-	public BadPasswordException(String message, Throwable ex) {
+	public BadActivationPasswordException(String message, Throwable ex) {
 		super(message, ex);
 	}
 
 	@Builder
-	public BadPasswordException(String message) {
+	public BadActivationPasswordException(String message) {
 		super(message);
 	}
 
 	@Builder
-	public BadPasswordException(Throwable ex) {
+	public BadActivationPasswordException(Throwable ex) {
 		super(ex);
 	}
 }

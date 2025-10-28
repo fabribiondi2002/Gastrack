@@ -89,7 +89,9 @@ public class Orden {
     }
 
     @Column(length = 5)
-    private long contrasenaActivacion;
+    private String contrasenaActivacion;
+
+    private Boolean cargaHabilitada=false;
 
     
     @Column(nullable = false)

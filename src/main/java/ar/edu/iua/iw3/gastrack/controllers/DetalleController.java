@@ -18,6 +18,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 
@@ -71,6 +72,10 @@ public class DetalleController {
 		}
 		catch (OrderInvalidStateException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		}
+		catch (OrderNotAuthorizedToLoadException e)
+		{
+			return new ResponseEntity<>(response.build(HttpStatus.FORBIDDEN, e, e.getMessage()), HttpStatus.FORBIDDEN);
 		}
 	}
 }
