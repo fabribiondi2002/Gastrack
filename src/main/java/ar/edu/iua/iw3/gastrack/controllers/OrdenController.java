@@ -157,7 +157,7 @@ public class OrdenController {
 	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
 	 * @throws BusinessException Por errores internos de negocio.
 	 */
-    @PostMapping(value = "/tara", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/tara")
     public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
         try {
 
