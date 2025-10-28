@@ -88,8 +88,11 @@ public class Orden {
         ORDEN_CANCELADA
     }
 
-    @Column(unique = true, length = 5)
+
+    @Column(length = 5)
     private String contrasenaActivacion;
+
+    private Boolean cargaHabilitada=false;
 
     
     @Column(nullable = false)

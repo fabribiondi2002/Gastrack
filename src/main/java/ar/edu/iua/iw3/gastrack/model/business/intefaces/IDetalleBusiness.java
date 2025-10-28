@@ -9,6 +9,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoadException;
 
 /** 
  * Interfaz para la logica de negocio de los detalles 
@@ -26,7 +27,7 @@ public interface IDetalleBusiness {
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
 	public Detalle add(String json) throws NotFoundException, BusinessException, InvalidDetailException,
-		InvalidDetailFrecuencyException, OrderInvalidStateException;
+		InvalidDetailFrecuencyException, OrderInvalidStateException, OrderNotAuthorizedToLoadException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
 

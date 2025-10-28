@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
@@ -18,11 +19,12 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailFrecuencyException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
-import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -97,26 +99,36 @@ public class DetalleBusiness implements IDetalleBusiness{
      * @throws InvalidDetailException Si el detalle no cumple los criterios de aceptacion
      * @throws InvalidDetailFrecuencyException Si el detalle no cumple con la frecuencia de muestreo
      * @throws OrderInvalidStateException Si la orden no se encuentra en estado valido para agregar detalles
+     * @throws OrderNotAuthorizedToLoadException Si la orden no esta habilitada para carga
      */
 
     @Override
 	public Detalle add(String json)
         throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException,
-        OrderInvalidStateException
+        OrderInvalidStateException, OrderNotAuthorizedToLoadException
     {
         //deserializador
-        ObjectMapper mapper = JsonUtiles.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
         Detalle detalle = null;
         try
         {
             detalle = mapper.readValue(json, Detalle.class);
         }
-        catch (Exception e)
+        catch (JsonProcessingException e)
         {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         } 
         Orden ord = ordenBusiness.loadByNumeroOrden(detalle.getOrden().getNumeroOrden());
+
+        if (!ord.getCargaHabilitada())
+        {
+            log.warn("Se intento registrar detalles en una operacion no habilitada para carga: " + ord.getId());
+            throw OrderNotAuthorizedToLoadException.builder()
+                .message("No se puede agregar detalle a la orden id "+ord.getId()+" ya que no esta habilitada para carga")
+                .build();
+        }
+
         if(!ord.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO))
         {
             log.warn("Se intento registrar detalles en una operacion con estado: " + ord.getEstado());

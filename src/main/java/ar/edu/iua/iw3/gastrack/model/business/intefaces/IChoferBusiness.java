@@ -23,7 +23,7 @@ public interface IChoferBusiness {
 
     public Chofer load(Long documento) throws NotFoundException, BusinessException;
 
-    public Chofer add(Chofer chofer) throws FoundException, BusinessException;
+    public Chofer add(Chofer chofer) throws BusinessException;
 
     public Chofer update(Chofer chofer) throws NotFoundException, FoundException, BusinessException;
 
