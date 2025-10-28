@@ -10,11 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ar.edu.iua.iw3.gastrack.model.Orden;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
+
+import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
@@ -28,7 +36,15 @@ import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+
+import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.TaraDTO;
+
+import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
+
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -292,4 +308,51 @@ public class OrdenBusiness implements IOrdenBusiness {
         
         return update(orden);
     }
+
+     * Registra la tara (peso inicial) de una orden a partir de un JSON recibido.
+     *
+     * @param json Cadena JSON con los datos de la tara.
+     * @return Contraseña de activación generada para la orden.
+     * @throws NotFoundException Si la orden no existe.
+     * @throws InvalidOrderAttributeException Si los datos del JSON son inválidos.
+     * @throws OrderInvalidStateException Si la orden no está en un estado válido para registrar la tara.
+     * @throws BusinessException Si ocurre un error interno durante el proceso.
+     */
+    @Override
+    public String registrarTara(String json) 
+        throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException {
+        
+        ObjectMapper mapper = JsonUtiles.getObjectMapper(TaraDTO.class, new TaraJsonDeserializer(TaraDTO.class), null);
+        TaraDTO tara = null;
+
+        try {
+            tara = mapper.readValue(json, TaraDTO.class);
+        }catch(Exception e){
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+
+        if (tara.getPesoInicial() == 0.0) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso inicial invalido").build();
+        }
+
+        Orden orden = loadByNumeroOrden(tara.getNumeroOrden());
+        
+        if (!orden.getEstado().equals(Estado.PENDIENTE_PESAJE_INICIAL)) {
+            throw OrderInvalidStateException.builder().message("estado de orden "+ orden.getEstado()+" invalido").build();
+        }
+
+        // Registra valores de pesaje inicial
+        orden.setPesoInicial(tara.getPesoInicial());
+        orden.setFechaPesajeInicial(new Date());
+        
+        orden.setContrasenaActivacion(ContrasenaActivacionUtiles.generarContrasena());
+
+        // Cambia estado
+        orden.siguienteEstado();
+
+        update(orden);
+        return orden.getContrasenaActivacion();
+    }
+
 }

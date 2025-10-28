@@ -17,11 +17,14 @@ import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
+
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -172,5 +175,35 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
+
+
+	/**
+	 * Registra la tara de una orden.
+	 *
+	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
+	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
+	 * @throws NotFoundException Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
+	 * @throws BusinessException Por errores internos de negocio.
+	 */
+    @PostMapping(value = "/tara")
+    public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
+        try {
+
+            String contrasenaActivacion = ordenBusiness.registrarTara(httpEntity.getBody());
+            return new ResponseEntity<String>(contrasenaActivacion, HttpStatus.OK);
+
+        } catch (BusinessException e) {
+            return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (InvalidOrderAttributeException e){
+			 return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()), HttpStatus.BAD_REQUEST);
+		} catch (NotFoundException e) {
+            return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+        } catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		}
+    }
+
 
 }

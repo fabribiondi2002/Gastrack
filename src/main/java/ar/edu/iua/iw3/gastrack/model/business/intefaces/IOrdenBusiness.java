@@ -8,8 +8,11 @@ import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
+
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 /** 
  * Interfaz para la logica de negocio de ordenes 
@@ -39,4 +42,6 @@ public interface IOrdenBusiness {
 
     public Orden habilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyAuthorizedToLoadException;
 
+    public String registrarTara(String json) throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException;
+    
 }
