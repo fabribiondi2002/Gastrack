@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
@@ -23,7 +24,7 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
-import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -107,13 +108,13 @@ public class DetalleBusiness implements IDetalleBusiness{
         OrderInvalidStateException, OrderNotAuthorizedToLoadException
     {
         //deserializador
-        ObjectMapper mapper = JsonUtiles.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Detalle.class, new DetalleJsonDeserializer(Detalle.class), null);
         Detalle detalle = null;
         try
         {
             detalle = mapper.readValue(json, Detalle.class);
         }
-        catch (Exception e)
+        catch (JsonProcessingException e)
         {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();

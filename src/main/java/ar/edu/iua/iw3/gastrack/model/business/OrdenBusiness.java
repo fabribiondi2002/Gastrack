@@ -22,9 +22,9 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
-import ar.edu.iua.iw3.gastrack.model.deserealizers.OrdenDeserealizer;
-import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
+import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
@@ -227,7 +227,7 @@ public class OrdenBusiness implements IOrdenBusiness {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Orden addOrdenCompleta(String json) throws FoundException, BusinessException {
-        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new OrdenDeserealizer(
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new OrdenDeserializer(
                 Orden.class, choferBusiness, clienteBusiness, camionBusiness, productoBusiness), null);
         Orden orden;
 

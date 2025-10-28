@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
-import ar.edu.iua.iw3.gastrack.util.JsonUtiles;
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 
 public class NOrdenPassJsonDeserializer extends StdDeserializer<NOrdenPassDTO> {
 
@@ -21,8 +21,8 @@ public class NOrdenPassJsonDeserializer extends StdDeserializer<NOrdenPassDTO> {
 	public NOrdenPassDTO deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
 		NOrdenPassDTO r = new NOrdenPassDTO();
 		JsonNode node = jp.getCodec().readTree(jp);
-        long numeroOrden = JsonUtiles.getLong(node, "numero_orden,numeroOrden,order_number,orderNumber".split(","), -1);
-        String contrasenaActivacion = JsonUtiles.getString(node, "contrasena_activacion,contrasenaActivacion,activation_password".split(","), "");
+        long numeroOrden = JsonUtils.getLong(node, "numero_orden,numeroOrden,order_number,orderNumber".split(","), null);
+        String contrasenaActivacion = JsonUtils.getString(node, "contrasena_activacion,contrasenaActivacion,activation_password".split(","), "");
         r.setNumeroOrden(numeroOrden);
         r.setContrasenaActivacion(contrasenaActivacion);
 		return r;

@@ -1,4 +1,4 @@
-package ar.edu.iua.iw3.gastrack.model.deserealizers;
+package ar.edu.iua.iw3.gastrack.model.deserializers;
 
 import java.io.IOException;
 import java.util.Date;
@@ -32,9 +32,9 @@ import ar.edu.iua.iw3.gastrack.util.JsonUtils;
  * Deserealizador de Ordenes
  * @see Orden
  */
-public class OrdenDeserealizer extends StdDeserializer<Orden> {
+public class OrdenDeserializer extends StdDeserializer<Orden> {
 
-	protected OrdenDeserealizer(Class<?> vc) {
+	protected OrdenDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
@@ -43,7 +43,7 @@ public class OrdenDeserealizer extends StdDeserializer<Orden> {
 	private ICamionBusiness camionBusiness;
 	private IProductoBusiness productoBusiness;
 
-	public OrdenDeserealizer(Class<?> vc, IChoferBusiness choferBusiness, IClienteBusiness clienteBusiness,
+	public OrdenDeserializer(Class<?> vc, IChoferBusiness choferBusiness, IClienteBusiness clienteBusiness,
 			ICamionBusiness camionBusiness, IProductoBusiness productoBusiness) {
 		super(vc);
 		this.choferBusiness = choferBusiness;
