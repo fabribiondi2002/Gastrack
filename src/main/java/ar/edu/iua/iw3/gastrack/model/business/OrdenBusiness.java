@@ -29,7 +29,7 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
-import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
+
 import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
@@ -37,7 +37,6 @@ import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 
 import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
-import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.TaraDTO;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -267,12 +266,12 @@ public class OrdenBusiness implements IOrdenBusiness {
     public Orden habilitarOrdenParaCarga(String json)
             throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyAuthorizedToLoadException {
 
-        ObjectMapper mapper = JsonUtils.getObjectMapper(NOrdenPassDTO.class, new NOrdenPassJsonDeserializer(
-                NOrdenPassDTO.class), null);
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new NOrdenPassJsonDeserializer(
+                Orden.class), null);
 
-        NOrdenPassDTO nOrdenPassDTO;
+        Orden nOrdenPassDTO;
         try {
-            nOrdenPassDTO = mapper.readValue(json, NOrdenPassDTO.class);
+            nOrdenPassDTO = mapper.readValue(json, Orden.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().build();
@@ -321,11 +320,11 @@ public class OrdenBusiness implements IOrdenBusiness {
     public String registrarTara(String json) 
         throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException {
 
-        ObjectMapper mapper = JsonUtils.getObjectMapper(TaraDTO.class, new TaraJsonDeserializer(TaraDTO.class), null);
-        TaraDTO tara = null;
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new TaraJsonDeserializer(Orden.class), null);
+        Orden tara = null;
 
         try {
-            tara = mapper.readValue(json, TaraDTO.class);
+            tara = mapper.readValue(json, Orden.class);
         }catch(Exception e){
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();

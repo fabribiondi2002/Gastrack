@@ -7,18 +7,18 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
-import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.TaraDTO;
+import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 
-public class TaraJsonDeserializer extends StdDeserializer<TaraDTO> {
+public class TaraJsonDeserializer extends StdDeserializer<Orden> {
 
 	public TaraJsonDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
 	@Override
-	public TaraDTO deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
-		TaraDTO r = new TaraDTO();
+	public Orden deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
+		Orden r = new Orden();
 		JsonNode node = jp.getCodec().readTree(jp);
 
         long numeroOrden = JsonUtils.getLong(node, "orden_numero,ordenNumero,order_number,orderNumber,numeroOrden".split(","), null);
