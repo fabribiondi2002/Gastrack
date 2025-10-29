@@ -2,6 +2,7 @@ package ar.edu.iua.iw3.gastrack.model.business;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,6 +223,59 @@ public class DetalleBusiness implements IDetalleBusiness{
         return r.get();
     }
 
-    
+    /*
+     * Obtener el ultimo detalle por id de orden
+     * @param ordenId Id de la orden
+     * @return Ultimo detalle
+     * @throws NotFoundException Si no se encuentra la orden o no hay detalles para la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     */
+    @Override
+    public Detalle getLastDetailByOrderId(long ordenId) throws NotFoundException, BusinessException {
+        Optional<Detalle> r;
+        try {
+            r = detalleDAO.findTopByOrdenIdOrderByFechaDesc(ordenId);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (r.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentran detalles para la orden id=" + ordenId).build();
+        }
+        return r.get();
+    }
+    @Override
+    public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException {
+        Map<String, Double> r;
+        Optional<List<Detalle>> detalles;
+        double sumaCaudal = 0.0;
+        double sumaDensidad = 0.0;
+        double sumaTemperatura = 0.0;
+        int cantidadDetalles = 0;
+        try {
+            detalles = detalleDAO.findAllByOrden_id(ordenId);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (detalles.isEmpty() || detalles.get().isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentran detalles para la orden id=" + ordenId).build();
+        }
+        for (Detalle detalle : detalles.get()) {
+            sumaCaudal += detalle.getCaudal();
+            sumaDensidad += detalle.getDensidad();
+            sumaTemperatura += detalle.getTemperatura();
+            cantidadDetalles++;
+        }
+        double promedioCaudal = sumaCaudal / cantidadDetalles;
+        double promedioDensidad = sumaDensidad / cantidadDetalles;
+        double promedioTemperatura = sumaTemperatura / cantidadDetalles;
+        r = Map.of(
+            "promedioCaudal", promedioCaudal,
+            "promedioDensidad", promedioDensidad,
+            "promedioTemperatura", promedioTemperatura
+        );
+        return r;
+    }
 
 }

@@ -84,7 +84,7 @@ public class Orden {
         PENDIENTE_PESAJE_INICIAL,
         PESAJE_INICIAL_REGISTRADO,
         ORDEN_CERRADA_PARA_CARGA,
-        PESAJE_FINAL_REGISTRADO,
+        FINALIZADO,
         ORDEN_CANCELADA
     }
 
@@ -139,8 +139,8 @@ public class Orden {
             case PESAJE_INICIAL_REGISTRADO:
                 this.estado = Estado.ORDEN_CERRADA_PARA_CARGA;
             case ORDEN_CERRADA_PARA_CARGA:
-                this.estado = Estado.PESAJE_FINAL_REGISTRADO;
-            case PESAJE_FINAL_REGISTRADO:
+                this.estado = Estado.FINALIZADO;
+            case FINALIZADO:
                 this.estado = Estado.ORDEN_CANCELADA;
             default:
                 break;

@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.model.business;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
@@ -20,12 +23,14 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateExcepti
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
 import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +51,9 @@ public class OrdenBusiness implements IOrdenBusiness {
     private ICamionBusiness camionBusiness;
     @Autowired
     private IProductoBusiness productoBusiness;
+
+    @Autowired
+    private IDetalleBusiness detalleBusiness;
 
     /**
      * Listar todas las ordenes por estado
@@ -292,4 +300,66 @@ public class OrdenBusiness implements IOrdenBusiness {
         
         return update(orden);
     }
+
+    @Override
+    public Orden registrarCierreOrden(double pesoFinal, long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException {
+        Orden orden;
+        try {
+            orden = loadByNumeroOrden(numeroOrden);
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
+        }
+        if (orden.getEstado()!= Estado.ORDEN_CERRADA_PARA_CARGA) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado ORDEN_CERRADA_PARA_CARGA")
+                    .build();
+        }
+        
+        Detalle ultimoDetalle;
+        try {
+            ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder().message("No se encontraron detalles para la orden de numero:" + numeroOrden).build();
+        }
+        orden.setPesoFinal(pesoFinal);
+        orden.setFechaPesajeFinal(new java.util.Date());
+        orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
+        orden.setUltimaDensidad(ultimoDetalle.getDensidad());
+        orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
+        orden.setUltimoCaudal(ultimoDetalle.getCaudal());
+        orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
+        orden.siguienteEstado();
+        return ordenDAO.save(orden);
+    }
+
+    public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException {
+        ConciliacionDTO conciliacionDTO = new ConciliacionDTO();
+        Orden orden;
+        Map<String, Double> promedios;
+        try {
+            orden = loadByNumeroOrden(numeroOrden);
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
+        }
+        if (orden.getEstado()!= Estado.FINALIZADO) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
+                    .build();
+        }
+        promedios = detalleBusiness.loadAverageDetails(orden.getId());
+        conciliacionDTO.setPesajeInicial(orden.getPesoInicial());
+        conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
+        conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
+        conciliacionDTO.setNetoBalanza(orden.getPesoFinal() - orden.getPesoInicial());
+        conciliacionDTO.setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
+        conciliacionDTO.setPromedioCaudal(promedios.get("caudal"));
+        conciliacionDTO.setPromedioTemperatura(promedios.get("temperatura"));
+        conciliacionDTO.setPromedioDensidad(promedios.get("densidad"));
+        return conciliacionDTO;
+    }
+
+    
 }
