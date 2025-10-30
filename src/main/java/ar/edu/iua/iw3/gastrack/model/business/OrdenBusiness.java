@@ -23,6 +23,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeExc
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
@@ -277,13 +278,14 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw BusinessException.builder().build();
         }
 
-        Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
-
-        if(orden.getCargaHabilitada().equals(true)) {
-            throw OrderAlreadyAuthorizedToLoadException.builder()
-                    .message("La orden numero " + orden.getNumeroOrden() + " ya se encuentra autorizada para carga")
-                    .build();
+        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
+        {
+            throw BadActivationPasswordException.builder().message("La contrasena de activacion no tiene formato valido").build();
         }
+        
+        
+        Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
+        
         
         if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
             throw OrderInvalidStateException.builder()
@@ -291,10 +293,13 @@ public class OrdenBusiness implements IOrdenBusiness {
                     .build();
         }
 
-        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
-        {
-            throw BadActivationPasswordException.builder().message("La contrasena de activacion no tiene formato valido").build();
+        if(orden.getCargaHabilitada().equals(true)) {
+            throw OrderAlreadyAuthorizedToLoadException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " ya se encuentra autorizada para carga")
+                    .build();
         }
+        
+
 
         if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
         {
@@ -353,4 +358,60 @@ public class OrdenBusiness implements IOrdenBusiness {
         return orden.getContrasenaActivacion();
     }
 
+    /**
+     * Deshabilita la carga de una orden si la contrasena de activacion es correcta
+     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
+     * @throws NotFoundException Si no existe una orden con ese numero
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
+     * @throws OrderAlreadyLockedToLoadException Si la orden ya se encuentra bloqueada para carga
+     */
+    @Override
+    public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException,
+            BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyLockedToLoadException {
+         
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new NOrdenPassJsonDeserializer(
+                Orden.class), null);
+
+        Orden nOrdenPassDTO;
+        try {
+            nOrdenPassDTO = mapper.readValue(json, Orden.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().build();
+        }
+
+        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
+        {
+            throw BadActivationPasswordException.builder().message("La contrasena no tiene formato valido").build();
+        }
+        
+        
+        Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
+        
+        
+        if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
+                    .build();
+        }
+
+        if(orden.getCargaHabilitada().equals(false)) {
+            throw OrderAlreadyLockedToLoadException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " ya se encuentra bloqueada para carga")
+                    .build();
+        }
+        
+
+
+        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
+        {
+            throw BadActivationPasswordException.builder().message("La contrasena es incorrecta").build();
+        }
+
+        orden.setCargaHabilitada(false);
+        orden.siguienteEstado();
+        return update(orden);
+
+    }
 }
