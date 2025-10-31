@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
@@ -26,6 +28,7 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
+import ar.edu.iua.iw3.gastrack.model.deserializers.CierreOrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.NOrdenPassDTO;
 import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
@@ -53,6 +56,7 @@ public class OrdenBusiness implements IOrdenBusiness {
     private IProductoBusiness productoBusiness;
 
     @Autowired
+    @Lazy
     private IDetalleBusiness detalleBusiness;
 
     /**
@@ -302,27 +306,36 @@ public class OrdenBusiness implements IOrdenBusiness {
     }
 
     @Override
-    public Orden registrarCierreOrden(double pesoFinal, long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException {
-        Orden orden;
+    public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException {
+
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new CierreOrdenDeserializer(Orden.class), null);
+        Orden pesajeFinal = null;
         try {
-            orden = loadByNumeroOrden(numeroOrden);
-        } catch (NotFoundException e) {
+            pesajeFinal = mapper.readValue(json, Orden.class);
+        }catch(JsonProcessingException e){
             log.error(e.getMessage(), e);
-            throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
+            throw BusinessException.builder().ex(e).build();
         }
+        if (pesajeFinal.getPesoFinal() <= 0.0) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso final invalido").build();
+        }
+        Orden orden = loadByNumeroOrden(pesajeFinal.getNumeroOrden());
+        
         if (orden.getEstado()!= Estado.ORDEN_CERRADA_PARA_CARGA) {
             throw OrderInvalidStateException.builder()
                     .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado ORDEN_CERRADA_PARA_CARGA")
                     .build();
         }
         
+        
         Detalle ultimoDetalle;
         try {
             ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
         } catch (NotFoundException e) {
             log.error(e.getMessage(), e);
-            throw NotFoundException.builder().message("No se encontraron detalles para la orden de numero:" + numeroOrden).build();
+            throw NotFoundException.builder().message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
         }
+        double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
         orden.setFechaPesajeFinal(new java.util.Date());
         orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
@@ -334,6 +347,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         return ordenDAO.save(orden);
     }
 
+    @Override
     public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException {
         ConciliacionDTO conciliacionDTO = new ConciliacionDTO();
         Orden orden;

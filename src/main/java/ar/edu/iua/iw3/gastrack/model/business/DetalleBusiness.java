@@ -22,6 +22,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
@@ -45,7 +46,7 @@ public class DetalleBusiness implements IDetalleBusiness{
     @Autowired
 	private DetalleRepository detalleDAO;
     @Autowired
-	private OrdenBusiness ordenBusiness;
+	private IOrdenBusiness ordenBusiness;
 
     /**
      * Listar todos los detalles

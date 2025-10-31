@@ -13,15 +13,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
+import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
+import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -173,4 +181,56 @@ public class OrdenController {
 		}
 	}
 
-}
+	/**
+	 * Registrar el cierre de una orden
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y el peso final
+	 * @return Respuesta HTTP con el estado de la operacion
+	 */
+	@PostMapping(value = "/registrar-cierre")
+	public ResponseEntity<?> registrarCierreOrden(HttpEntity<String> httpEntity) {
+		try {
+			Orden orden = ordenBusiness.registrarCierreOrden(httpEntity.getBody());
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
+			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()),
+					HttpStatus.NOT_FOUND);
+		} catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()),
+					HttpStatus.CONFLICT);
+		} catch (InvalidOrderAttributeException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+
+		}
+	}
+
+	@GetMapping("/conciliacion/{numeroOrden}")
+	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden) {
+		try {
+			ConciliacionDTO conciliacion = ordenBusiness.crearConciliacion(Long.parseLong(numeroOrden));
+			StdSerializer<ConciliacionDTO> serializer;
+			serializer = new ConciliacionSerializer(ConciliacionDTO.class,false);
+			String result = JsonUtils.getObjectMapper(ConciliacionDTO.class, serializer, null)
+					.writeValueAsString(conciliacion);
+
+
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (BusinessException | JsonProcessingException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, "El numero de orden debe ser un numero valido"), HttpStatus.BAD_REQUEST);
+		} catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		}
+	}
+	}
+	
+
