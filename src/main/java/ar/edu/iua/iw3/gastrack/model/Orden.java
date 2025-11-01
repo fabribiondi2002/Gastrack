@@ -1,6 +1,5 @@
 package ar.edu.iua.iw3.gastrack.model;
 
-
 import java.beans.Transient;
 import java.util.Date;
 import java.util.Set;
@@ -25,30 +24,32 @@ import lombok.Setter;
 
 /**
  * Clase que representa una orden de carga de una cisterna.
- * Cada orden tiene un ID único, un estado, un peso inicial, un peso final, fechas de pesaje y carga, y mediciones de la última carga.
- * @param camion El camión asociado a la orden.
- * @param chofer El chofer asociado a la orden.
- * @param producto El producto asociado a la orden.
- * @param cliente El cliente asociado a la orden.
- * @param detalles Arreglo de los detalles de la orden.
- * @param id Identificador único de la orden.
- * @param numeroOrden Número único de la orden.
- * @param estado Estado actual de la orden.
+ * Cada orden tiene un ID único, un estado, un peso inicial, un peso final,
+ * fechas de pesaje y carga, y mediciones de la última carga.
+ * 
+ * @param camion               El camión asociado a la orden.
+ * @param chofer               El chofer asociado a la orden.
+ * @param producto             El producto asociado a la orden.
+ * @param cliente              El cliente asociado a la orden.
+ * @param detalles             Arreglo de los detalles de la orden.
+ * @param id                   Identificador único de la orden.
+ * @param numeroOrden          Número único de la orden.
+ * @param estado               Estado actual de la orden.
  * @param contrasenaActivacion Contraseña de activación de la orden.
- * @param codigoExterno Código externo de la orden.
- * @param preset Volumen a cargar de la orden.
- * @param pesoInicial Peso inicial del camión.
- * @param pesoFinal Peso final del camión.
- * @param fechaPesajeInicial Fecha del pesaje inicial.
- * @param fechaPesajeFinal Fecha del pesaje final.
- * @param fechaCargaPrevista Fecha prevista para la carga.
- * @param fechaInicioCarga Fecha de inicio de la carga.
- * @param fechaFinCarga Fecha de fin de la carga.
- * @param ultimaMasaAcumulada Última masa acumulada registrada.
- * @param ultimaDensidad Última densidad registrada.
- * @param ultimaTemperatura Última temperatura registrada.
- * @param ultimoCaudal Último caudal registrado.
- * @param fechaUltimoMedicion Fecha de la última medición registrada.
+ * @param codigoExterno        Código externo de la orden.
+ * @param preset               Volumen a cargar de la orden.
+ * @param pesoInicial          Peso inicial del camión.
+ * @param pesoFinal            Peso final del camión.
+ * @param fechaPesajeInicial   Fecha del pesaje inicial.
+ * @param fechaPesajeFinal     Fecha del pesaje final.
+ * @param fechaCargaPrevista   Fecha prevista para la carga.
+ * @param fechaInicioCarga     Fecha de inicio de la carga.
+ * @param fechaFinCarga        Fecha de fin de la carga.
+ * @param ultimaMasaAcumulada  Última masa acumulada registrada.
+ * @param ultimaDensidad       Última densidad registrada.
+ * @param ultimaTemperatura    Última temperatura registrada.
+ * @param ultimoCaudal         Último caudal registrado.
+ * @param fechaUltimoMedicion  Fecha de la última medición registrada.
  * @author Leandro Biondi
  * @author Benjamin Vargas
  * @author Antonella Badami
@@ -64,7 +65,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Orden {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -72,12 +73,11 @@ public class Orden {
     @Column(nullable = false, unique = true)
     private long numeroOrden;
 
-
     @Column(nullable = true, unique = true)
     private String codigoExterno;
 
     @Enumerated(EnumType.STRING)
-    @Column()
+    @Column(length = 30, nullable = false)
     private Estado estado;
 
     public enum Estado {
@@ -91,9 +91,8 @@ public class Orden {
     @Column(length = 5)
     private String contrasenaActivacion;
 
-    private Boolean cargaHabilitada=false;
+    private Boolean cargaHabilitada = false;
 
-    
     @Column(nullable = false)
     private double preset;
 
@@ -130,7 +129,7 @@ public class Orden {
 
     @OneToMany(mappedBy = "orden")
     private Set<Detalle> detalles;
-    
+
     @Transient
     public void siguienteEstado() {
         switch (this.estado) {

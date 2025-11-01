@@ -208,7 +208,11 @@ public class OrdenController {
 
 		}
 	}
-
+	/*
+	 * Obtener la conciliacion de una orden
+	 * @param numeroOrden Numero de la orden
+	 * @return ConciliacionDTO serializado en JSON
+	 */
 	@GetMapping("/conciliacion/{numeroOrden}")
 	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden) {
 		try {

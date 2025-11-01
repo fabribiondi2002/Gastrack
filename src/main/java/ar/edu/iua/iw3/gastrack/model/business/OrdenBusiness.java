@@ -69,7 +69,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      * @throws BusinessException Si ocurre un error no previsto
      * 
      * @throws NotFoundException Si no se encuentran ordenes con el estado
-     * especificado
+     *                           especificado
      */
     @Override
     public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException {
@@ -132,7 +132,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      *                           id o uno con el codigo externo
      */
 
-@Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Orden add(Orden orden) throws FoundException, BusinessException {
         if (orden.getCodigoExterno() != null) {
@@ -157,6 +157,7 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw BusinessException.builder().ex(e).build();
         }
     }
+
     /**
      * Obtener un orden por id
      * 
@@ -255,15 +256,23 @@ public class OrdenBusiness implements IOrdenBusiness {
 
     /**
      * Habilita una orden para carga si la contrasena de activacion es correcta
-     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
-     * @throws NotFoundException Si no existe una orden con ese numero
-     * @throws BusinessException Si ocurre un error no previsto
-     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
-     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra autorizada para carga
+     * 
+     * @throws BadActivationPasswordException        Si la contrasena de activacion
+     *                                               es incorrecta o no tiene el
+     *                                               formato valido
+     * @throws NotFoundException                     Si no existe una orden con ese
+     *                                               numero
+     * @throws BusinessException                     Si ocurre un error no previsto
+     * @throws OrderInvalidStateException            Si la orden no se encuentra en
+     *                                               el estado
+     *                                               PESAJE_INICIAL_REGISTRADO
+     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra
+     *                                               autorizada para carga
      */
     @Override
     public Orden habilitarOrdenParaCarga(String json)
-            throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyAuthorizedToLoadException {
+            throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException,
+            OrderAlreadyAuthorizedToLoadException {
 
         ObjectMapper mapper = JsonUtils.getObjectMapper(NOrdenPassDTO.class, new NOrdenPassJsonDeserializer(
                 NOrdenPassDTO.class), null);
@@ -278,41 +287,53 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
 
-        if(orden.getCargaHabilitada().equals(true)) {
+        if (orden.getCargaHabilitada().equals(true)) {
             throw OrderAlreadyAuthorizedToLoadException.builder()
                     .message("La orden numero " + orden.getNumeroOrden() + " ya se encuentra autorizada para carga")
                     .build();
         }
-        
+
         if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
             throw OrderInvalidStateException.builder()
-                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
+                    .message("La orden numero " + orden.getNumeroOrden()
+                            + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
                     .build();
         }
 
-        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
-        {
-            throw BadActivationPasswordException.builder().message("La contrasena de activacion no tiene formato valido").build();
+        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion())) {
+            throw BadActivationPasswordException.builder()
+                    .message("La contrasena de activacion no tiene formato valido").build();
         }
 
-        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
-        {
+        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion())) {
             throw BadActivationPasswordException.builder().message("La contrasena de activacion es incorrecta").build();
         }
 
         orden.setCargaHabilitada(true);
-        
+
         return update(orden);
     }
 
+    /*
+     * Registrar el cierre de una orden
+     * @param json Json con el numero de orden y el peso final
+     * @return Orden actualizada
+     * @throws NotFoundException Si no se encuentra la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en estado
+     *         ORDEN_CERRADA_PARA_CARGA
+     * @throws InvalidOrderAttributeException Si el peso final es menor o igual al
+     *         peso inicial
+    */
     @Override
-    public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException {
+    public Orden registrarCierreOrden(String json)
+            throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException {
 
         ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new CierreOrdenDeserializer(Orden.class), null);
         Orden pesajeFinal = null;
         try {
             pesajeFinal = mapper.readValue(json, Orden.class);
-        }catch(JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         }
@@ -320,20 +341,24 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw InvalidOrderAttributeException.builder().message("valor de peso final invalido").build();
         }
         Orden orden = loadByNumeroOrden(pesajeFinal.getNumeroOrden());
-        
-        if (orden.getEstado()!= Estado.ORDEN_CERRADA_PARA_CARGA) {
+        if (orden.getEstado() != Estado.ORDEN_CERRADA_PARA_CARGA) {
             throw OrderInvalidStateException.builder()
-                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado ORDEN_CERRADA_PARA_CARGA")
+                    .message("La orden numero " + orden.getNumeroOrden()
+                            + " no se encuentra en estado ORDEN_CERRADA_PARA_CARGA")
                     .build();
         }
+        if (pesajeFinal.getPesoFinal() <= orden.getPesoInicial()) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso final es menor al del peso inicial").build();
+        }
         
-        
+
         Detalle ultimoDetalle;
         try {
             ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
         } catch (NotFoundException e) {
             log.error(e.getMessage(), e);
-            throw NotFoundException.builder().message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
+            throw NotFoundException.builder()
+                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
         }
         double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
@@ -343,12 +368,20 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
         orden.setUltimoCaudal(ultimoDetalle.getCaudal());
         orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
-        orden.siguienteEstado();
+        orden.setEstado(Estado.FINALIZADO);
         return ordenDAO.save(orden);
     }
-
+    /*
+     * Crear la conciliacion de una orden
+     * @param numeroOrden Numero de la orden
+     * @return ConciliacionDTO
+     * @throws NotFoundException Si no se encuentra la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en estado FINALIZADO
+     */
     @Override
-    public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException {
+    public ConciliacionDTO crearConciliacion(long numeroOrden)
+            throws NotFoundException, BusinessException, OrderInvalidStateException {
         ConciliacionDTO conciliacionDTO = new ConciliacionDTO();
         Orden orden;
         Map<String, Double> promedios;
@@ -358,7 +391,7 @@ public class OrdenBusiness implements IOrdenBusiness {
             log.error(e.getMessage(), e);
             throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
         }
-        if (orden.getEstado()!= Estado.FINALIZADO) {
+        if (orden.getEstado() != Estado.FINALIZADO) {
             throw OrderInvalidStateException.builder()
                     .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
                     .build();
@@ -368,12 +401,13 @@ public class OrdenBusiness implements IOrdenBusiness {
         conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
         conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
         conciliacionDTO.setNetoBalanza(orden.getPesoFinal() - orden.getPesoInicial());
-        conciliacionDTO.setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
-        conciliacionDTO.setPromedioCaudal(promedios.get("caudal"));
-        conciliacionDTO.setPromedioTemperatura(promedios.get("temperatura"));
-        conciliacionDTO.setPromedioDensidad(promedios.get("densidad"));
+        conciliacionDTO
+                .setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
+        conciliacionDTO.setPromedioCaudal(promedios.get("promedioCaudal"));
+        conciliacionDTO.setPromedioTemperatura(promedios.get("promedioTemperatura"));
+        conciliacionDTO.setPromedioDensidad(promedios.get("promedioDensidad"));
+
         return conciliacionDTO;
     }
 
-    
 }

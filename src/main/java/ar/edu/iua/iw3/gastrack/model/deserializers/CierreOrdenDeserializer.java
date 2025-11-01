@@ -23,7 +23,7 @@ public class CierreOrdenDeserializer extends StdDeserializer<Orden> {
 		JsonNode node = jp.getCodec().readTree(jp);
 
         long numeroOrden = JsonUtils.getLong(node, "orden_numero,ordenNumero,order_number,orderNumber,numeroOrden".split(","), null);
-        double pesofinal = JsonUtils.getDouble(node, "peso_final,pesaje_inicial".split(","), 0.0);
+        double pesofinal = JsonUtils.getDouble(node, "peso_final,pesaje_final".split(","), 0.0);
         r.setNumeroOrden(numeroOrden);
         r.setPesoFinal(pesofinal);
 

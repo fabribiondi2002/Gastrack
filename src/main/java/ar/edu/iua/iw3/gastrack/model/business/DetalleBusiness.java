@@ -245,6 +245,13 @@ public class DetalleBusiness implements IDetalleBusiness{
         }
         return r.get();
     }
+    /*
+     * Obtener el promedio de caudal, densidad y temperatura de los detalles de una orden
+     * @param ordenId Id de la orden
+     * @return Mapa con los promedios de caudal, densidad y temperatura
+     * @throws NotFoundException Si no se encuentra la orden o no hay detalles para la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     */
     @Override
     public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException {
         Map<String, Double> r;
