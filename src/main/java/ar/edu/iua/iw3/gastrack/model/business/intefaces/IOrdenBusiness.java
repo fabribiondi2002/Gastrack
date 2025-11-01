@@ -2,18 +2,16 @@ package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 
 import java.util.List;
 
-
-
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 /** 
  * Interfaz para la logica de negocio de ordenes 
  * @author Leandro Biondi
@@ -46,4 +44,7 @@ public interface IOrdenBusiness {
 
     public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyLockedToLoadException;
     
+    public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException;
+
+    public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException;
 }

@@ -1,48 +1,44 @@
 package ar.edu.iua.iw3.gastrack.model.business;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
+import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
-
-import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
-
 import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
-
+import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
-
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.ICamionBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IChoferBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IClienteBusiness;
+import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
-
+import ar.edu.iua.iw3.gastrack.model.deserializers.CierreOrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
-
-import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
-
-
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Date;
 
 @Service
 @Slf4j
@@ -61,6 +57,10 @@ public class OrdenBusiness implements IOrdenBusiness {
     @Autowired
     private IProductoBusiness productoBusiness;
 
+    @Autowired
+    @Lazy
+    private IDetalleBusiness detalleBusiness;
+
     /**
      * Listar todas las ordenes por estado
      * 
@@ -71,7 +71,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      * @throws BusinessException Si ocurre un error no previsto
      * 
      * @throws NotFoundException Si no se encuentran ordenes con el estado
-     * especificado
+     *                           especificado
      */
     @Override
     public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException {
@@ -134,7 +134,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      *                           id o uno con el codigo externo
      */
 
-@Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Orden add(Orden orden) throws FoundException, BusinessException {
         if (orden.getCodigoExterno() != null) {
@@ -159,6 +159,7 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw BusinessException.builder().ex(e).build();
         }
     }
+
     /**
      * Obtener un orden por id
      * 
@@ -257,15 +258,23 @@ public class OrdenBusiness implements IOrdenBusiness {
 
     /**
      * Habilita una orden para carga si la contrasena de activacion es correcta
-     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
-     * @throws NotFoundException Si no existe una orden con ese numero
-     * @throws BusinessException Si ocurre un error no previsto
-     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
-     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra autorizada para carga
+     * 
+     * @throws BadActivationPasswordException        Si la contrasena de activacion
+     *                                               es incorrecta o no tiene el
+     *                                               formato valido
+     * @throws NotFoundException                     Si no existe una orden con ese
+     *                                               numero
+     * @throws BusinessException                     Si ocurre un error no previsto
+     * @throws OrderInvalidStateException            Si la orden no se encuentra en
+     *                                               el estado
+     *                                               PESAJE_INICIAL_REGISTRADO
+     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra
+     *                                               autorizada para carga
      */
     @Override
     public Orden habilitarOrdenParaCarga(String json)
-            throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyAuthorizedToLoadException {
+            throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException,
+            OrderAlreadyAuthorizedToLoadException {
 
         ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new NOrdenPassJsonDeserializer(
                 Orden.class), null);
@@ -289,7 +298,8 @@ public class OrdenBusiness implements IOrdenBusiness {
         
         if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
             throw OrderInvalidStateException.builder()
-                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
+                    .message("La orden numero " + orden.getNumeroOrden()
+                            + " no se encuentra en estado PESAJE_INICIAL_REGISTRADO")
                     .build();
         }
 
@@ -301,13 +311,12 @@ public class OrdenBusiness implements IOrdenBusiness {
         
 
 
-        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
-        {
+        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion())) {
             throw BadActivationPasswordException.builder().message("La contrasena de activacion es incorrecta").build();
         }
 
         orden.setCargaHabilitada(true);
-        
+
         return update(orden);
     }
 
@@ -414,4 +423,100 @@ public class OrdenBusiness implements IOrdenBusiness {
         return update(orden);
 
     }
+    /*
+     * Registrar el cierre de una orden
+     * @param json Json con el numero de orden y el peso final
+     * @return Orden actualizada
+     * @throws NotFoundException Si no se encuentra la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en estado
+     *         ORDEN_CERRADA_PARA_CARGA
+     * @throws InvalidOrderAttributeException Si el peso final es menor o igual al
+     *         peso inicial
+    */
+    @Override
+    public Orden registrarCierreOrden(String json)
+            throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException {
+
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new CierreOrdenDeserializer(Orden.class), null);
+        Orden pesajeFinal = null;
+        try {
+            pesajeFinal = mapper.readValue(json, Orden.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (pesajeFinal.getPesoFinal() <= 0.0) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso final invalido").build();
+        }
+        Orden orden = loadByNumeroOrden(pesajeFinal.getNumeroOrden());
+        if (orden.getEstado() != Estado.ORDEN_CERRADA_PARA_CARGA) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden()
+                            + " no se encuentra en estado ORDEN_CERRADA_PARA_CARGA")
+                    .build();
+        }
+        if (pesajeFinal.getPesoFinal() <= orden.getPesoInicial()) {
+            throw InvalidOrderAttributeException.builder().message("valor de peso final es menor al del peso inicial").build();
+        }
+        
+
+        Detalle ultimoDetalle;
+        try {
+            ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder()
+                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
+        }
+        double pesoFinal = pesajeFinal.getPesoFinal();
+        orden.setPesoFinal(pesoFinal);
+        orden.setFechaPesajeFinal(new java.util.Date());
+        orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
+        orden.setUltimaDensidad(ultimoDetalle.getDensidad());
+        orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
+        orden.setUltimoCaudal(ultimoDetalle.getCaudal());
+        orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
+        orden.setEstado(Estado.FINALIZADO);
+        return ordenDAO.save(orden);
+    }
+    /*
+     * Crear la conciliacion de una orden
+     * @param numeroOrden Numero de la orden
+     * @return ConciliacionDTO
+     * @throws NotFoundException Si no se encuentra la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en estado FINALIZADO
+     */
+    @Override
+    public ConciliacionDTO crearConciliacion(long numeroOrden)
+            throws NotFoundException, BusinessException, OrderInvalidStateException {
+        ConciliacionDTO conciliacionDTO = new ConciliacionDTO();
+        Orden orden;
+        Map<String, Double> promedios;
+        try {
+            orden = loadByNumeroOrden(numeroOrden);
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder().message("No se encuentra la orden de numero:" + numeroOrden).build();
+        }
+        if (orden.getEstado() != Estado.FINALIZADO) {
+            throw OrderInvalidStateException.builder()
+                    .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
+                    .build();
+        }
+        promedios = detalleBusiness.loadAverageDetails(orden.getId());
+        conciliacionDTO.setPesajeInicial(orden.getPesoInicial());
+        conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
+        conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
+        conciliacionDTO.setNetoBalanza(orden.getPesoFinal() - orden.getPesoInicial());
+        conciliacionDTO
+                .setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
+        conciliacionDTO.setPromedioCaudal(promedios.get("promedioCaudal"));
+        conciliacionDTO.setPromedioTemperatura(promedios.get("promedioTemperatura"));
+        conciliacionDTO.setPromedioDensidad(promedios.get("promedioDensidad"));
+
+        return conciliacionDTO;
+    }
+
 }

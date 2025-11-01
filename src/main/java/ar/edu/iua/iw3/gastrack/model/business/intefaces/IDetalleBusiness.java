@@ -1,6 +1,7 @@
 package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 
 import java.util.List;
+import java.util.Map;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
@@ -34,5 +35,9 @@ public interface IDetalleBusiness {
 	public void delete(long id) throws NotFoundException, BusinessException;
 
 	public List<Detalle> loadByOrdenId(long ordenId) throws NotFoundException, BusinessException;
+
+	public Detalle getLastDetailByOrderId(long ordenId) throws NotFoundException, BusinessException;
+
+	public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException;	
 
 }

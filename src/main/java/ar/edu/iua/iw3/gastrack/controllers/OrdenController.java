@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
@@ -23,12 +26,14 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedTo
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoadException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
+import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
-
-
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 
 /**
  * Controlador REST para la gestion de ordenes
+ * 
  * @author Leandro Biondi
  * @author Benjamin Vargas
  * @author Antonella Badami
@@ -43,37 +48,39 @@ public class OrdenController {
 	@Autowired
 	private IOrdenBusiness ordenBusiness;
 
-    @Autowired
+	@Autowired
 	private IStandardResponseBusiness response;
 
-
 	/**
-	 * Listar ordenes por estado 
+	 * Listar ordenes por estado
+	 * 
 	 * @param status Estado de la orden
 	 * @return Lista de ordenes
-	 * @throws NotFoundException Si no se encuentran ordenes con el estado especificado
+	 * @throws NotFoundException Si no se encuentran ordenes con el estado
+	 *                           especificado
 	 * @throws BusinessException Si ocurre un error no previsto
-	*/
-    @GetMapping(value = "/by-status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
+	 */
+	@GetMapping(value = "/by-status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> list(@PathVariable Orden.Estado status) {
 		try {
 			return new ResponseEntity<>(ordenBusiness.listByStatus(status), HttpStatus.OK);
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch (NotFoundException e) {
+		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
 
 	/**
 	 * Obtener una orden por id
+	 * 
 	 * @param id Id de la orden
 	 * @return Orden cargada
 	 * @throws NotFoundException Si no existe una orden con ese id
 	 * @throws BusinessException Si ocurre un error no previsto
 	 */
-    @GetMapping(value = "/{id}")
+	@GetMapping(value = "/{id}")
 	public ResponseEntity<?> load(@PathVariable long id) {
 		try {
 			return new ResponseEntity<>(ordenBusiness.load(id), HttpStatus.OK);
@@ -84,8 +91,10 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
+
 	/**
 	 * Obtener una orden por codigo externo
+	 * 
 	 * @param codigoExterno Codigo externo de la orden
 	 * @return Orden cargada
 	 * @throws NotFoundException Si no existe una orden con ese codigo externo
@@ -102,6 +111,7 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
+
 	@GetMapping(value = "/numeroOrden/{numeroOrden}")
 	public ResponseEntity<?> loadByNumeroOrden(@PathVariable long numeroOrden) {
 		try {
@@ -126,10 +136,13 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		}
 	}
-	/**
 
+	/**
+	 * 
 	 * Registrar una orden completa a partir de un JSON
-	 * Tiene en cuenta todos los objetos relacionados (chofer, camion, cliente, producto)
+	 * Tiene en cuenta todos los objetos relacionados (chofer, camion, cliente,
+	 * producto)
+	 * 
 	 * @param httpEntity Entidad HTTP que contiene el JSON de la orden
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
@@ -150,10 +163,12 @@ public class OrdenController {
 
 		}
 	}
-	
+
 	/**
 	 * Habilitar una orden para carga
-	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y la contrasena de activacion
+	 * 
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y
+	 *                   la contrasena de activacion
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
 	@PostMapping(value = "/carga/habilitar")
@@ -166,49 +181,53 @@ public class OrdenController {
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch (NotFoundException e) {
+		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (BadActivationPasswordException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()), HttpStatus.UNAUTHORIZED);
-		} catch (OrderInvalidStateException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
-		} catch (OrderAlreadyAuthorizedToLoadException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()),
+					HttpStatus.UNAUTHORIZED);
+		} catch (OrderInvalidStateException | OrderAlreadyAuthorizedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
-
 
 	/**
 	 * Registra la tara de una orden.
 	 *
 	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
 	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
-	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
-	 * @throws NotFoundException Cuando la orden no se encuentra.
-	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
-	 * @throws BusinessException Por errores internos de negocio.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los
+	 *                                        atributos de la orden.
+	 * @throws NotFoundException              Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException     Cuando la orden está en un estado no
+	 *                                        admitido.
+	 * @throws BusinessException              Por errores internos de negocio.
 	 */
-    @PostMapping(value = "/tara")
-    public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
-        try {
+	@PostMapping(value = "/tara")
+	public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
+		try {
 
-            String contrasenaActivacion = ordenBusiness.registrarTara(httpEntity.getBody());
-            return new ResponseEntity<String>(contrasenaActivacion, HttpStatus.OK);
+			String contrasenaActivacion = ordenBusiness.registrarTara(httpEntity.getBody());
+			return new ResponseEntity<>(contrasenaActivacion, HttpStatus.OK);
 
-        } catch (BusinessException e) {
-            return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (InvalidOrderAttributeException e){
-			 return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()), HttpStatus.BAD_REQUEST);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (InvalidOrderAttributeException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()),
+					HttpStatus.BAD_REQUEST);
 		} catch (NotFoundException e) {
-            return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-        } catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (OrderInvalidStateException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}
-    }
+	}
 
 	/**
 	 * Deshabilitar una orden para carga
-	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y la contrasena de activacion
+	 * 
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y
+	 *                   la contrasena de activacion
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
 	@PostMapping("/carga/deshabilitar")
@@ -221,13 +240,72 @@ public class OrdenController {
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch (NotFoundException e) {
+		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (BadActivationPasswordException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()), HttpStatus.UNAUTHORIZED);
-		} catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()),
+					HttpStatus.UNAUTHORIZED);
+		} catch (OrderInvalidStateException | OrderAlreadyLockedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
-		} catch (OrderAlreadyLockedToLoadException e) {
+		}
+	}
+
+	/**
+	 * Registrar el cierre de una orden
+	 * 
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y
+	 *                   el peso final
+	 * @return Respuesta HTTP con el estado de la operacion
+	 */
+	@PostMapping(value = "/registrar-cierre")
+	public ResponseEntity<?> registrarCierreOrden(HttpEntity<String> httpEntity) {
+		try {
+			Orden orden = ordenBusiness.registrarCierreOrden(httpEntity.getBody());
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
+			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (OrderInvalidStateException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()),
+					HttpStatus.CONFLICT);
+		} catch (InvalidOrderAttributeException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.BAD_REQUEST, e, e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+
+		}
+	}
+
+	/*
+	 * Obtener la conciliacion de una orden
+	 * 
+	 * @param numeroOrden Numero de la orden
+	 * 
+	 * @return ConciliacionDTO serializado en JSON
+	 */
+	@GetMapping("/conciliacion/{numeroOrden}")
+	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden) {
+		try {
+			ConciliacionDTO conciliacion = ordenBusiness.crearConciliacion(Long.parseLong(numeroOrden));
+			StdSerializer<ConciliacionDTO> serializer;
+			serializer = new ConciliacionSerializer(ConciliacionDTO.class, false);
+			String result = JsonUtils.getObjectMapper(ConciliacionDTO.class, serializer, null)
+					.writeValueAsString(conciliacion);
+
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (BusinessException | JsonProcessingException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NotFoundException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
+		} catch (NumberFormatException e) {
+			return new ResponseEntity<>(
+					response.build(HttpStatus.BAD_REQUEST, e, "El numero de orden debe ser un numero valido"),
+					HttpStatus.BAD_REQUEST);
+		} catch (OrderInvalidStateException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}
 	}
