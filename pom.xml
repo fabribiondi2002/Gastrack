@@ -13,6 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>gastrack</name>
 	<description>Demo project for Spring Boot</description>
+	<packaging>${packaging.type}</packaging>
 	<url/>
 	<licenses>
 		<license/>
@@ -28,6 +29,10 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<tomcat.scope>runtime</tomcat.scope>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    	<resource.encoding>UTF-8</resource.encoding>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -70,6 +75,11 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>${tomcat.scope}</scope>
 		</dependency>
 	</dependencies>
 

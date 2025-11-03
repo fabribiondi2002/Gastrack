@@ -1,13 +1,26 @@
 package ar.edu.iua.iw3.gastrack;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
+import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
-public class GastrackApplication {
+@Slf4j
+public class GastrackApplication extends SpringBootServletInitializer implements CommandLineRunner{
 
 	public static void main(String[] args) {
 		SpringApplication.run(GastrackApplication.class, args);
+	}
+
+	@Value("${spring.profiles.active}")
+	private String activeProfile;
+	@Override
+	public void run(String... args) throws Exception {
+		log.info("Active profile: {}", activeProfile);
 	}
 
 }
