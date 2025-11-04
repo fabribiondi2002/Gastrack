@@ -38,6 +38,8 @@ public interface IDetalleBusiness {
 
 	public Detalle getLastDetailByOrderId(long ordenId) throws NotFoundException, BusinessException;
 
+	public Detalle getFirstDetailByOrderId(long ordenId) throws NotFoundException, BusinessException;
+
 	public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException;	
 
 }

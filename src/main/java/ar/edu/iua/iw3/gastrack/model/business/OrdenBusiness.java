@@ -252,7 +252,9 @@ public class OrdenBusiness implements IOrdenBusiness {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().message("El formato JSON es incorrecto").build();
         }
-
+        orden.setFechaRecepcionInicial(new Date());
+        orden.setEstado(Estado.PENDIENTE_PESAJE_INICIAL);
+        log.info("Estado cambiado a PENDIENTE_PESAJE_INICIAL");
         return add(orden);
     }
 
@@ -459,7 +461,15 @@ public class OrdenBusiness implements IOrdenBusiness {
         if (pesajeFinal.getPesoFinal() <= orden.getPesoInicial()) {
             throw InvalidOrderAttributeException.builder().message("valor de peso final es menor al del peso inicial").build();
         }
-        
+        Detalle primerDetalle;
+        try {
+            primerDetalle = detalleBusiness.getFirstDetailByOrderId(orden.getId());
+        } catch (NotFoundException e) {
+            log.error(e.getMessage(), e);
+            throw NotFoundException.builder()
+                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
+        }
+        orden.setFechaPrimerMedicion(primerDetalle.getFecha());
 
         Detalle ultimoDetalle;
         try {
@@ -472,12 +482,19 @@ public class OrdenBusiness implements IOrdenBusiness {
         double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
         orden.setFechaPesajeFinal(new java.util.Date());
+
+        Map<String, Double> promedios;
+        promedios = detalleBusiness.loadAverageDetails(orden.getId());
+        orden.setPromedioCaudal(promedios.get("promedioCaudal"));
+        orden.setPromedioDensidad(promedios.get("promedioDensidad"));
+        orden.setPromedioTemperatura(promedios.get("promedioTemperatura"));
+
         orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
         orden.setUltimaDensidad(ultimoDetalle.getDensidad());
         orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
         orden.setUltimoCaudal(ultimoDetalle.getCaudal());
         orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
-        orden.setEstado(Estado.FINALIZADO);
+        orden.siguienteEstado();
         return ordenDAO.save(orden);
     }
     /*
@@ -493,7 +510,7 @@ public class OrdenBusiness implements IOrdenBusiness {
             throws NotFoundException, BusinessException, OrderInvalidStateException {
         ConciliacionDTO conciliacionDTO = new ConciliacionDTO();
         Orden orden;
-        Map<String, Double> promedios;
+        
         try {
             orden = loadByNumeroOrden(numeroOrden);
         } catch (NotFoundException e) {
@@ -505,16 +522,14 @@ public class OrdenBusiness implements IOrdenBusiness {
                     .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
                     .build();
         }
-        promedios = detalleBusiness.loadAverageDetails(orden.getId());
         conciliacionDTO.setPesajeInicial(orden.getPesoInicial());
         conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
         conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
         conciliacionDTO.setNetoBalanza(orden.getPesoFinal() - orden.getPesoInicial());
-        conciliacionDTO
-                .setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
-        conciliacionDTO.setPromedioCaudal(promedios.get("promedioCaudal"));
-        conciliacionDTO.setPromedioTemperatura(promedios.get("promedioTemperatura"));
-        conciliacionDTO.setPromedioDensidad(promedios.get("promedioDensidad"));
+        conciliacionDTO.setDifBalanzaCaudalimentro(conciliacionDTO.getNetoBalanza() - conciliacionDTO.getProductoCargado());
+        conciliacionDTO.setPromedioCaudal(orden.getPromedioCaudal());
+        conciliacionDTO.setPromedioTemperatura(orden.getPromedioTemperatura());
+        conciliacionDTO.setPromedioDensidad(orden.getPromedioDensidad());
 
         return conciliacionDTO;
     }

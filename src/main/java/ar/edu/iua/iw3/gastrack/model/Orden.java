@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Clase que representa una orden de carga de una cisterna.
@@ -40,11 +41,15 @@ import lombok.Setter;
  * @param preset               Volumen a cargar de la orden.
  * @param pesoInicial          Peso inicial del camión.
  * @param pesoFinal            Peso final del camión.
+ * @param fechaRecepcionInicial Fecha de recepción inicial de la orden.
  * @param fechaPesajeInicial   Fecha del pesaje inicial.
  * @param fechaPesajeFinal     Fecha del pesaje final.
  * @param fechaCargaPrevista   Fecha prevista para la carga.
  * @param fechaInicioCarga     Fecha de inicio de la carga.
  * @param fechaFinCarga        Fecha de fin de la carga.
+ * @param promedioCaudal       Promedio de caudal durante la carga.
+ * @param promedioDensidad     Promedio de densidad durante la carga.
+ * @param promedioTemperatura  Promedio de temperatura durante la carga.
  * @param ultimaMasaAcumulada  Última masa acumulada registrada.
  * @param ultimaDensidad       Última densidad registrada.
  * @param ultimaTemperatura    Última temperatura registrada.
@@ -56,7 +61,7 @@ import lombok.Setter;
  * @version 1.0
  * @since 2025-10-16
  */
-
+@Slf4j
 @Entity
 @Table(name = "ordenes")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -97,6 +102,8 @@ public class Orden {
     @Column(nullable = false)
     private double preset;
 
+    private Date fechaRecepcionInicial;
+
     private double pesoInicial;
     private double pesoFinal;
     private Date fechaPesajeInicial;
@@ -106,10 +113,15 @@ public class Orden {
     private Date fechaInicioCarga;
     private Date fechaFinCarga;
 
+    private double promedioCaudal;
+    private double promedioDensidad;
+    private double promedioTemperatura;
+
     private double ultimaMasaAcumulada;
     private double ultimaDensidad;
     private double ultimaTemperatura;
     private double ultimoCaudal;
+    private Date fechaPrimerMedicion;
     private Date fechaUltimoMedicion;
 
     @ManyToOne
@@ -136,14 +148,15 @@ public class Orden {
         switch (this.estado) {
             case PENDIENTE_PESAJE_INICIAL:
                 this.estado = Estado.PESAJE_INICIAL_REGISTRADO;
+                log.info("Estado cambiado a PESAJE_INICIAL_REGISTRADO");
                 break;
             case PESAJE_INICIAL_REGISTRADO:
                 this.estado = Estado.ORDEN_CERRADA_PARA_CARGA;
+                log.info("Estado cambiado a ORDEN_CERRADA_PARA_CARGA");
                 break;
             case ORDEN_CERRADA_PARA_CARGA:
                 this.estado = Estado.FINALIZADO;
-            case FINALIZADO:
-                this.estado = Estado.ORDEN_CANCELADA;
+                log.info("Estado cambiado a FINALIZADO");
                 break;
             default:
                 break;

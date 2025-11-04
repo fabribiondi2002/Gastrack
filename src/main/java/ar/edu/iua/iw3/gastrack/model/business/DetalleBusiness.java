@@ -286,4 +286,26 @@ public class DetalleBusiness implements IDetalleBusiness{
         return r;
     }
 
+    /*
+     * Obtener el primer detalle por id de orden
+     * @param ordenId Id de la orden
+     * @return Primer detalle
+     * @throws NotFoundException Si no se encuentra la orden o no hay detalles para la orden
+     * @throws BusinessException Si ocurre un error no previsto
+     */
+    @Override
+    public Detalle getFirstDetailByOrderId(long ordenId) throws NotFoundException, BusinessException {
+        Optional<Detalle> r;
+        try {
+            r = detalleDAO.findTopByOrdenIdOrderByFechaAsc(ordenId);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+        if (r.isEmpty()) {
+            throw NotFoundException.builder().message("No se encuentran detalles para la orden id=" + ordenId).build();
+        }
+        return r.get();
+    }
+
 }
