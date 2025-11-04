@@ -225,9 +225,7 @@ public class OrdenController {
 
 	/**
 	 * Deshabilitar una orden para carga
-	 * 
-	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden y
-	 *                   la contrasena de activacion
+	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
 	@PostMapping("/carga/deshabilitar")
@@ -242,9 +240,6 @@ public class OrdenController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
-		} catch (BadActivationPasswordException e) {
-			return new ResponseEntity<>(response.build(HttpStatus.UNAUTHORIZED, e, e.getMessage()),
-					HttpStatus.UNAUTHORIZED);
 		} catch (OrderInvalidStateException | OrderAlreadyLockedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
 		}

@@ -42,7 +42,7 @@ public interface IOrdenBusiness {
 
     public String registrarTara(String json) throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException;
 
-    public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException, BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyLockedToLoadException;
+    public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, OrderAlreadyLockedToLoadException;
     
     public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException;
 

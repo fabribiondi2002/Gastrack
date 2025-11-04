@@ -31,6 +31,7 @@ import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IProductoBusiness;
 import ar.edu.iua.iw3.gastrack.model.deserializers.CierreOrdenDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.NOrdenPassJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.OrdenDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.TaraJsonDeserializer;
@@ -368,35 +369,27 @@ public class OrdenBusiness implements IOrdenBusiness {
     }
 
     /**
-     * Deshabilita la carga de una orden si la contrasena de activacion es correcta
-     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
+     * Deshabilita la carga de una orden
      * @throws NotFoundException Si no existe una orden con ese numero
      * @throws BusinessException Si ocurre un error no previsto
      * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
      * @throws OrderAlreadyLockedToLoadException Si la orden ya se encuentra bloqueada para carga
      */
     @Override
-    public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException,
-            BadActivationPasswordException, OrderInvalidStateException, OrderAlreadyLockedToLoadException {
+    public Orden deshabilitarOrdenParaCarga(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, OrderAlreadyLockedToLoadException {
          
-        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new NOrdenPassJsonDeserializer(
+        ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new NOrdenJsonDeserializer(
                 Orden.class), null);
 
-        Orden nOrdenPassDTO;
+        Orden orden;
         try {
-            nOrdenPassDTO = mapper.readValue(json, Orden.class);
+            orden = mapper.readValue(json, Orden.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
             throw BusinessException.builder().build();
         }
-
-        if (!ContrasenaActivacionUtiles.formatoDeConstrasenaValido(nOrdenPassDTO.getContrasenaActivacion()))
-        {
-            throw BadActivationPasswordException.builder().message("La contrasena no tiene formato valido").build();
-        }
         
-        
-        Orden orden = loadByNumeroOrden(nOrdenPassDTO.getNumeroOrden());
+        orden = loadByNumeroOrden(orden.getNumeroOrden());
         
         
         if (!orden.getEstado().equals(Orden.Estado.PESAJE_INICIAL_REGISTRADO)) {
@@ -411,12 +404,6 @@ public class OrdenBusiness implements IOrdenBusiness {
                     .build();
         }
         
-
-
-        if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion()))
-        {
-            throw BadActivationPasswordException.builder().message("La contrasena es incorrecta").build();
-        }
 
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
