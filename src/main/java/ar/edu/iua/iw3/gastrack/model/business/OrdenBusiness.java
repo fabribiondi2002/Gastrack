@@ -336,7 +336,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         try {
             tara = mapper.readValue(json, Orden.class);
-        }catch(Exception e){
+        }catch(JsonProcessingException e){
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         }

@@ -209,12 +209,10 @@ public class OrdenController {
 	 *
 	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
 	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
-	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los
-	 *                                        atributos de la orden.
-	 * @throws NotFoundException              Cuando la orden no se encuentra.
-	 * @throws OrderInvalidStateException     Cuando la orden está en un estado no
-	 *                                        admitido.
-	 * @throws BusinessException              Por errores internos de negocio.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
+	 * @throws NotFoundException Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
+	 * @throws BusinessException Por errores internos de negocio.
 	 */
 	@PostMapping(value = "/tara")
 	public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
@@ -233,6 +231,8 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (OrderInvalidStateException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 		}
 	}
 
