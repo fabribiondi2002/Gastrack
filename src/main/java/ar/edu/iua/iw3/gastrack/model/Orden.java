@@ -124,6 +124,8 @@ public class Orden {
     private Date fechaPrimerMedicion;
     private Date fechaUltimoMedicion;
 
+    private Date fechaCierreOrdenParaCarga;
+
     @ManyToOne
     @JoinColumn(name = "id_camion")
     private Camion camion;

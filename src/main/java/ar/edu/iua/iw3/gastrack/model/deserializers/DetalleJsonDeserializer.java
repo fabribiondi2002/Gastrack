@@ -1,4 +1,10 @@
 package ar.edu.iua.iw3.gastrack.model.deserializers;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.CAUDAL;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.DENSIDAD;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.MASA_ACUMULADA;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.NUMERO_ORDEN;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.TEMPERATURA;
+
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JacksonException;
@@ -22,11 +28,12 @@ public class DetalleJsonDeserializer extends StdDeserializer<Detalle> {
 		Detalle r = new Detalle();
 		JsonNode node = jp.getCodec().readTree(jp);
 
-        double masaAcumulada = JsonUtils.getDouble(node, "masa_acumulada,masaAcumulada,masa".split(","), 0.0);
-        double densidad = JsonUtils.getDouble(node, "densidad,density".split(","), 0.0);
-        double temperatura = JsonUtils.getDouble(node, "temperatura,temperature,temp".split(","), 0.0);
-        double caudal = JsonUtils.getDouble(node, "caudal,flow_rate,flowrate".split(","), 0.0);
-        long numeroOrden = JsonUtils.getLong(node, "orden_numero,ordenNumero,order_number,orderNumber".split(","), null);
+        Double masaAcumulada = JsonUtils.getDouble(node, MASA_ACUMULADA, null);
+        Double densidad = JsonUtils.getDouble(node, DENSIDAD, null);
+        Double temperatura = JsonUtils.getDouble(node, TEMPERATURA, null);
+        Double caudal = JsonUtils.getDouble(node, CAUDAL, null);
+        Long numeroOrden = JsonUtils.getLong(node, NUMERO_ORDEN, null);
+        
         r.setMasaAcumulada(masaAcumulada);
         r.setDensidad(densidad);
         r.setTemperatura(temperatura);

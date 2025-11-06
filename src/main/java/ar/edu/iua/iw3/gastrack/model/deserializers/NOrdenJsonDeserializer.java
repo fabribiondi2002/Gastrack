@@ -1,5 +1,4 @@
 package ar.edu.iua.iw3.gastrack.model.deserializers;
-import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.CONTRASENA_ACTIVACION;
 import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.NUMERO_ORDEN;
 
 import java.io.IOException;
@@ -13,10 +12,10 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 
-public class NOrdenPassJsonDeserializer extends StdDeserializer<Orden> {
+public class NOrdenJsonDeserializer extends StdDeserializer<Orden> {
 
 
-	public NOrdenPassJsonDeserializer(Class<?> vc) {
+	public NOrdenJsonDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
@@ -24,10 +23,8 @@ public class NOrdenPassJsonDeserializer extends StdDeserializer<Orden> {
 	public Orden deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
 		Orden r = new Orden();
 		JsonNode node = jp.getCodec().readTree(jp);
-        long numeroOrden = JsonUtils.getLong(node, NUMERO_ORDEN, null);
-        String contrasenaActivacion = JsonUtils.getString(node,CONTRASENA_ACTIVACION, null);
+        long numeroOrden = JsonUtils.getLong(node,NUMERO_ORDEN, null);
         r.setNumeroOrden(numeroOrden);
-        r.setContrasenaActivacion(contrasenaActivacion);
 		return r;
 	}
 
