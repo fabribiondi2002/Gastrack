@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
-/*
+/**
  * Serializador personalizado para preset de Orden
  * @author Leandro Biondi
  * @author Antonella Badami

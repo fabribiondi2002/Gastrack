@@ -28,4 +28,9 @@ public class JsonAtributesConstants {
     public static final String[] CLIENTE_OBJETO = {"cliente", "Cliente"};
     public static final String[] RAZON_SOCIAL_CLIENTE = {"razon_social", "cliente_razon_social"};
     public static final String[] MAIL_CLIENTE = {"mail", "cliente_mail", "email_cliente"};
+    public static final String[] MASA_ACUMULADA = {"masa_acumulada","masaAcumulada","masa"};
+    public static final String[] DENSIDAD = {"densidad","density"};
+    public static final String[] TEMPERATURA = {"temperatura","temperature","temp"};
+    public static final String[] CAUDAL = {"caudal","flow_rate","flowrate"};
+    
 }

@@ -77,5 +77,8 @@ public class DetalleController {
 		{
 			return new ResponseEntity<>(response.build(HttpStatus.FORBIDDEN, e, e.getMessage()), HttpStatus.FORBIDDEN);
 		}
+		catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		}
 	}
 }
