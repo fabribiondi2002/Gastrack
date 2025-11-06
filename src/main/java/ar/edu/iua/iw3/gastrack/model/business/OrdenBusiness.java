@@ -260,17 +260,11 @@ public class OrdenBusiness implements IOrdenBusiness {
     /**
      * Habilita una orden para carga si la contrasena de activacion es correcta
      * 
-     * @throws BadActivationPasswordException        Si la contrasena de activacion
-     *                                               es incorrecta o no tiene el
-     *                                               formato valido
-     * @throws NotFoundException                     Si no existe una orden con ese
-     *                                               numero
-     * @throws BusinessException                     Si ocurre un error no previsto
-     * @throws OrderInvalidStateException            Si la orden no se encuentra en
-     *                                               el estado
-     *                                               PESAJE_INICIAL_REGISTRADO
-     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra
-     *                                               autorizada para carga
+     * @throws BadActivationPasswordException Si la contrasena de activacion es incorrecta o no tiene el formato valido
+     * @throws NotFoundException Si no existe una orden con ese numero
+     * @throws BusinessException Si ocurre un error no previsto
+     * @throws OrderInvalidStateException Si la orden no se encuentra en el estado PESAJE_INICIAL_REGISTRADO
+     * @throws OrderAlreadyAuthorizedToLoadException Si la orden ya se encuentra autorizada para carga
      */
     @Override
     public Orden habilitarOrdenParaCarga(String json)
@@ -407,6 +401,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
+        orden.setFechaCierreOrden(new Date());
         return update(orden);
 
     }

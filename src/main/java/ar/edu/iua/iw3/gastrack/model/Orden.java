@@ -112,6 +112,8 @@ public class Orden {
     private double ultimoCaudal;
     private Date fechaUltimoMedicion;
 
+    private Date fechaCierreOrden;
+
     @ManyToOne
     @JoinColumn(name = "id_camion")
     private Camion camion;
