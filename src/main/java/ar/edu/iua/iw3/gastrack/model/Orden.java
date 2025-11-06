@@ -112,7 +112,7 @@ public class Orden {
     private double ultimoCaudal;
     private Date fechaUltimoMedicion;
 
-    private Date fechaCierreOrden;
+    private Date fechaCierreOrdenParaCarga;
 
     @ManyToOne
     @JoinColumn(name = "id_camion")

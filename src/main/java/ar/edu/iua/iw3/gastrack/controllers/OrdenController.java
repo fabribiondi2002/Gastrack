@@ -27,6 +27,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoad
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
@@ -175,9 +176,15 @@ public class OrdenController {
 	public ResponseEntity<?> habilitarCarga(HttpEntity<String> httpEntity) {
 		try {
 			Orden orden = ordenBusiness.habilitarOrdenParaCarga(httpEntity.getBody());
+
+			StdSerializer<Orden> serializer = new PresetSerializer(Orden.class, false);
+			String result = JsonUtils.getObjectMapper(Orden.class, serializer, null)
+					.writeValueAsString(orden);
+					
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
-			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
+			
+			return new ResponseEntity<>(result,responseHeaders, HttpStatus.CREATED);
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
@@ -188,6 +195,9 @@ public class OrdenController {
 					HttpStatus.UNAUTHORIZED);
 		} catch (OrderInvalidStateException | OrderAlreadyAuthorizedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		} catch (JsonProcessingException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

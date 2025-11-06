@@ -401,7 +401,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
-        orden.setFechaCierreOrden(new Date());
+        orden.setFechaCierreOrdenParaCarga(new Date());
         return update(orden);
 
     }
