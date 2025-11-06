@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
@@ -32,6 +33,12 @@ import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -215,6 +222,115 @@ public class OrdenController {
 	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
 	 * @throws BusinessException Por errores internos de negocio.
 	 */
+
+	@Operation(
+    	operationId = "registrar-tara",
+    	summary = "Regitra la tara de una orden.",
+    	description = "Permite registrar la tara de uns orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion."
+	)
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    	required = true,
+    	description = "Datos de la tara a registrar.",
+    	content = @Content(
+    	    mediaType = "application/json",
+    	    schema = @Schema(implementation = Detalle.class),
+    	    examples = {
+    	        @ExampleObject(
+    	            name = "Ejemplo válido",
+    	            summary = "Detalle básico de ejemplo",
+    	            description = "Ejemplo de cuerpo válido para registrar una tara.",
+    	            value = """
+    	            {
+    	                "numeroOrden": 1234,
+    					"pesoInicial": 15000.0
+    	            }
+    	            """
+    	        )
+    	    }
+    	)
+	)
+	@ApiResponses(value = {
+    	@ApiResponse(
+			responseCode = "201",
+			description = "Tara registrada correctamente. Devuelve la contraseña de activacion en formato JSON.",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(
+					name = "Tara registrada",
+					value = """
+					{
+					 "message": "contrasenaActivacion: 18685",
+					 "code": 201
+					}
+					"""
+				))
+    	),
+    	@ApiResponse(
+    	    responseCode = "400",
+    	    description = "La tara enviada es inválida o faltan campos obligatorios.",
+    	    content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Tara invalida",
+                value = """
+                {
+				 "message": "valor de peso inicial invalido",
+				 "code": 400,
+				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
+                }
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "404",
+    	    description = "No se encontró la orden o recurso asociado al detalle.",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Orden no encontrado",
+                value = """
+                {
+					"message": "No se encuentra la orden de numero:98776",
+    				"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:98776"		
+                }
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "409",
+    	    description = "La orden asociada está en un estado inválido para esta operación.",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Estado invalido",
+                value = """
+                {
+					"message": "estado de orden PESAJE_INICIAL_REGISTRADO invalido",
+    				"code": 409,
+    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: estado de orden PESAJE_INICIAL_REGISTRADO invalido"
+				}
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "500",
+    	    description = "Error interno del servidor.",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Error interno del servidor",
+                value = """
+                {
+				 	"message": null,
+    				"code": 500,
+    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+				}
+                """
+            ))
+    	)
+	})
+
 	@PostMapping(value = "/tara")
 	public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
 		try {
