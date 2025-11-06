@@ -22,7 +22,7 @@ public class TaraJsonDeserializer extends StdDeserializer<Orden> {
 		JsonNode node = jp.getCodec().readTree(jp);
 
         long numeroOrden = JsonUtils.getLong(node, "orden_numero,ordenNumero,order_number,orderNumber,numeroOrden".split(","), null);
-        double tara = JsonUtils.getDouble(node, "tara,pesoInicial".split(","), 0.0);
+        double tara = JsonUtils.getDouble(node, "tara,pesoInicial".split(","), null);
         r.setNumeroOrden(numeroOrden);
         r.setPesoInicial(tara);
 

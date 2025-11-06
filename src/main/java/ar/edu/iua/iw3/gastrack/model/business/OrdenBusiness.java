@@ -328,7 +328,7 @@ public class OrdenBusiness implements IOrdenBusiness {
      * @throws BusinessException Si ocurre un error interno durante el proceso.
      */
     @Override
-    public String registrarTara(String json) 
+    public Orden registrarTara(String json) 
         throws NotFoundException, BusinessException, InvalidOrderAttributeException, OrderInvalidStateException {
 
         ObjectMapper mapper = JsonUtils.getObjectMapper(Orden.class, new TaraJsonDeserializer(Orden.class), null);
@@ -336,7 +336,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         try {
             tara = mapper.readValue(json, Orden.class);
-        }catch(Exception e){
+        }catch(JsonProcessingException e){
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         }
@@ -360,8 +360,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         // Cambia estado
         orden.siguienteEstado();
 
-        update(orden);
-        return orden.getContrasenaActivacion();
+        return update(orden);
     }
 
     /**

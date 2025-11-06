@@ -27,6 +27,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyLockedToLoad
 import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.ContrasenaActivacionSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
@@ -209,19 +210,22 @@ public class OrdenController {
 	 *
 	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
 	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
-	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los
-	 *                                        atributos de la orden.
-	 * @throws NotFoundException              Cuando la orden no se encuentra.
-	 * @throws OrderInvalidStateException     Cuando la orden está en un estado no
-	 *                                        admitido.
-	 * @throws BusinessException              Por errores internos de negocio.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
+	 * @throws NotFoundException Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
+	 * @throws BusinessException Por errores internos de negocio.
 	 */
 	@PostMapping(value = "/tara")
 	public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
 		try {
 
-			String contrasenaActivacion = ordenBusiness.registrarTara(httpEntity.getBody());
-			return new ResponseEntity<>(contrasenaActivacion, HttpStatus.OK);
+			Orden orden = ordenBusiness.registrarTara(httpEntity.getBody());
+			
+			StdSerializer<Orden> serializer = new ContrasenaActivacionSerializer(Orden.class, false);
+			String result = JsonUtils.getObjectMapper(Orden.class, serializer, null)
+					.writeValueAsString(orden);
+
+			return new ResponseEntity<>(result, HttpStatus.CREATED);
 
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
@@ -233,6 +237,11 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (OrderInvalidStateException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		} catch (JsonProcessingException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
