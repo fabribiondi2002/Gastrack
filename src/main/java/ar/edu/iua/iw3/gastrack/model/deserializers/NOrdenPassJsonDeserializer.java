@@ -1,4 +1,7 @@
 package ar.edu.iua.iw3.gastrack.model.deserializers;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.CONTRASENA_ACTIVACION;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.NUMERO_ORDEN;
+
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JacksonException;
@@ -21,8 +24,8 @@ public class NOrdenPassJsonDeserializer extends StdDeserializer<Orden> {
 	public Orden deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
 		Orden r = new Orden();
 		JsonNode node = jp.getCodec().readTree(jp);
-        long numeroOrden = JsonUtils.getLong(node, "numero_orden,numeroOrden,order_number,orderNumber".split(","), null);
-        String contrasenaActivacion = JsonUtils.getString(node, "contrasena_activacion,contrasenaActivacion,activation_password".split(","), "");
+        long numeroOrden = JsonUtils.getLong(node, NUMERO_ORDEN, null);
+        String contrasenaActivacion = JsonUtils.getString(node,CONTRASENA_ACTIVACION, null);
         r.setNumeroOrden(numeroOrden);
         r.setContrasenaActivacion(contrasenaActivacion);
 		return r;

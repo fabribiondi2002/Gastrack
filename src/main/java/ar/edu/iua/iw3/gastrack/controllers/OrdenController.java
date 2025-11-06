@@ -198,6 +198,9 @@ public class OrdenController {
 		} catch (JsonProcessingException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+
 		}
 	}
 
@@ -252,6 +255,10 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (OrderInvalidStateException | OrderAlreadyLockedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
+		}
+		catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+
 		}
 	}
 

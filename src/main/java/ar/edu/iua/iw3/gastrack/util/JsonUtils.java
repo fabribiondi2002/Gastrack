@@ -88,7 +88,13 @@ public final class JsonUtils {
 			}
 		}
 		if (r == null)
-			r = defaultValue;
+		{
+			if( defaultValue != null) {
+				return defaultValue;
+			} else {
+				throw new IllegalArgumentException("Campo String no encontrado: " + String.join(", ", attrs));
+			}
+		}
 		return r;
 	}
 

@@ -1,4 +1,6 @@
 package ar.edu.iua.iw3.gastrack.model.deserializers;
+import static ar.edu.iua.iw3.gastrack.util.JsonAtributesConstants.NUMERO_ORDEN;
+
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JacksonException;
@@ -21,7 +23,7 @@ public class NOrdenJsonDeserializer extends StdDeserializer<Orden> {
 	public Orden deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JacksonException {
 		Orden r = new Orden();
 		JsonNode node = jp.getCodec().readTree(jp);
-        long numeroOrden = JsonUtils.getLong(node, "numero_orden,numeroOrden,order_number,orderNumber".split(","), null);
+        long numeroOrden = JsonUtils.getLong(node,NUMERO_ORDEN, null);
         r.setNumeroOrden(numeroOrden);
 		return r;
 	}
