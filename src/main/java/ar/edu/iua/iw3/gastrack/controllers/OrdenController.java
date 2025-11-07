@@ -29,8 +29,8 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateExcepti
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.ContrasenaActivacionSerializer;
-import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
+import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -155,6 +155,78 @@ public class OrdenController {
 	 * @param httpEntity Entidad HTTP que contiene el JSON de la orden
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
+	@Operation(operationId = "registrar-orden", summary = "Registra una orden completa.", description = "Permite registrar una orden completa a partir de un cuerpo JSON que incluye todos los objetos relacionados (chofer, camion, cliente, producto).")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Datos de la orden a registrar junto con el cliente, chofer, camion, cisterna y producto.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Orden completa", description = "Ejemplo de cuerpo válido para registrar una orden completa", value = """
+					    	            {
+					  "numero_orden": 12345,
+					"fecha_carga_prevista": "2025-10-28T08:30:00.000-03:00",
+					  "preset": 15000,
+					  "codigo_externo": "ejemploCodigoExterno",
+
+					  "chofer": {
+					    "nombre": "Juan",
+					    "apellido": "Pérez",
+					    "documento": 30123456
+					  },
+
+					  "camion": {
+					    "patente": "AB123CD",
+					    "camion_descripcion": "Camión Scania cisterna 30.000L",
+					    "cisternas": [
+					      {
+					        "numero_cisterna": 1,
+					        "volumen_cisterna": 30000
+					      },
+					      {
+					        "numero_cisterna": 2,
+					        "volumen_cisterna": 28000
+					      }
+					    ]
+					  },
+
+					  "producto": {
+					    "nombre_producto": "Gas Oil Grado 3",
+					    "descripcion_producto": "Combustible diésel premium de alta calidad"
+					  },
+
+					  "cliente": {
+					    "razon_social": "Transporte Biondi SRL",
+					    "mail": "contacto@biondi.com"
+					  }
+					}
+
+					    	            """)
+	}))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Orden registrada correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden registrada", value = """
+					{
+					 "numeroOrden": 1234
+					}
+					"""))),
+			@ApiResponse(responseCode = "400", description = "El JSON enviado es inválido o faltan campos obligatorios.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "JSON invalido", value = """
+					{
+					 "message": "El JSON de la orden es invalido",
+					 "code": 400,
+					 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: El JSON de la orden es invalido"
+					}
+					"""))),
+			@ApiResponse(responseCode = "302", description = "Ya existe una orden con el mismo número de orden.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden duplicada", value = """
+					{
+						"message": "La orden con numero 12345 ya existe",
+						"code": 302,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.FoundException: La orden con numero 12345 ya existe"
+					}
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+					 	"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
+
 	@PostMapping(value = "")
 	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
 		try {
@@ -181,128 +253,57 @@ public class OrdenController {
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
 
-	@Operation(
-    	operationId = "habilitar-carga",
-    	summary = "Habilita la carga de una orden.",
-    	description = "Permite habilitar la carga de una orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion."
-	)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-    	required = true,
-    	description = "Datos de la carga a habilitar.",
-    	content = @Content(
-    	    mediaType = "application/json",
-    	    schema = @Schema(implementation = Detalle.class),
-    	    examples = {
-    	        @ExampleObject(
-    	            name = "Ejemplo válido",
-    	            summary = "Detalle básico de ejemplo",
-    	            description = "Ejemplo de cuerpo válido para habilitar carga.",
-    	            value = """
-    	            {
-    	                "numero_orden": 123485,
-    					"contrasenaActivacion": "67689"
-    	            }
-    	            """
-    	        )
-    	    }
-    	)
-	)
+	@Operation(operationId = "habilitar-carga", summary = "Habilita la carga de una orden.", description = "Permite habilitar la carga de una orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion.")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Datos de la carga a habilitar.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Detalle básico de ejemplo", description = "Ejemplo de cuerpo válido para habilitar carga.", value = """
+					        {
+					            "numero_orden": 123485,
+					"contrasenaActivacion": "67689"
+					        }
+					        """)
+	}))
 	@ApiResponses(value = {
-    	@ApiResponse(
-			responseCode = "201",
-			description = "Carga habilitada correctamente. Devuelve el preset en formato JSON.",
-			content = @Content(
-				mediaType = "application/json",
-				examples = @ExampleObject(
-					name = "Carga habilitada",
-					value = """
+			@ApiResponse(responseCode = "201", description = "Carga habilitada correctamente. Devuelve el preset en formato JSON.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Carga habilitada", value = """
 					{
 					 "message": "preset:15000.0",
 					 "code": 201
 					}
-					"""
-				))
-    	),
-    	@ApiResponse(
-    	    responseCode = "400",
-    	    description = "La tara enviada es inválida o faltan campos obligatorios.",
-    	    content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Tara invalida",
-                value = """
-                {
-				 "message": "valor de peso inicial invalido",
-				 "code": 400,
-				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
-                }
-                """
-            ))
-    	),
-		@ApiResponse(
-    	    responseCode = "401",
-    	    description = "La contraseña de activacion enviada es inválida.",
-    	    content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Contraseña de activacion invalida",
-                value = """
-                {
-				 "message": "La contrasena de activacion no tiene formato valido",
-				 "code": 401,
-				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException: La contrasena de activacion no tiene formato valido"
-                }
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "404",
-    	    description = "No se encontró la orden",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Orden no encontrada",
-                value = """
-                {
+					"""))),
+			@ApiResponse(responseCode = "400", description = "La tara enviada es inválida o faltan campos obligatorios.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Tara invalida", value = """
+					           {
+					"message": "valor de peso inicial invalido",
+					"code": 400,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "401", description = "La contraseña de activacion enviada es inválida.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Contraseña de activacion invalida", value = """
+					           {
+					"message": "La contrasena de activacion no tiene formato valido",
+					"code": 401,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException: La contrasena de activacion no tiene formato valido"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "404", description = "No se encontró la orden", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					           {
 					"message": "No se encuentra la orden de numero:123475",
-    				"code": 404,
-					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"		
-                }
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "409",
-    	    description = "La orden asociada está en un estado inválido para esta operación.",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Estado invalido",
-                value = """
-                {
-					"message": "La orden numero 123485 ya se encuentra autorizada para carga",
-    				"code": 409,
-    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException: La orden numero 123485 ya se encuentra autorizada para carga"
-				}
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "500",
-    	    description = "Error interno del servidor.",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Error interno del servidor",
-                value = """
-                {
-				 	"message": null,
-    				"code": 500,
-    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
-				}
-                """
-            ))
-    	)
+								"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "409", description = "La orden asociada está en un estado inválido para esta operación.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Estado invalido", value = """
+					            {
+						"message": "La orden numero 123485 ya se encuentra autorizada para carga",
+									"code": 409,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException: La orden numero 123485 ya se encuentra autorizada para carga"
+					}
+					            """))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					            {
+					 	"message": null,
+									"code": 500,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					            """)))
 	})
 
 	@PostMapping(value = "/carga/habilitar")
@@ -313,11 +314,11 @@ public class OrdenController {
 			StdSerializer<Orden> serializer = new PresetSerializer(Orden.class, false);
 			String result = JsonUtils.getObjectMapper(Orden.class, serializer, null)
 					.writeValueAsString(orden);
-					
+
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
-			
-			return new ResponseEntity<>(result,responseHeaders, HttpStatus.CREATED);
+
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.CREATED);
 		} catch (BusinessException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
@@ -342,118 +343,58 @@ public class OrdenController {
 	 *
 	 * @param httpEntity Contiene el JSON con los datos necesarios para el registro.
 	 * @return Contraseña de activación si tiene éxito, o un error correspondiente.
-	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los atributos de la orden.
-	 * @throws NotFoundException Cuando la orden no se encuentra.
-	 * @throws OrderInvalidStateException Cuando la orden está en un estado no admitido.
-	 * @throws BusinessException Por errores internos de negocio.
+	 * @throws InvalidOrderAttributeException Cuando faltan o son inválidos los
+	 *                                        atributos de la orden.
+	 * @throws NotFoundException              Cuando la orden no se encuentra.
+	 * @throws OrderInvalidStateException     Cuando la orden está en un estado no
+	 *                                        admitido.
+	 * @throws BusinessException              Por errores internos de negocio.
 	 */
 
-	@Operation(
-    	operationId = "registrar-tara",
-    	summary = "Regitra la tara de una orden.",
-    	description = "Permite registrar la tara de uns orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion."
-	)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-    	required = true,
-    	description = "Datos de la tara a registrar.",
-    	content = @Content(
-    	    mediaType = "application/json",
-    	    schema = @Schema(implementation = Detalle.class),
-    	    examples = {
-    	        @ExampleObject(
-    	            name = "Ejemplo válido",
-    	            summary = "Detalle básico de ejemplo",
-    	            description = "Ejemplo de cuerpo válido para registrar una tara.",
-    	            value = """
-    	            {
-    	                "numeroOrden": 1234,
-    					"pesoInicial": 15000.0
-    	            }
-    	            """
-    	        )
-    	    }
-    	)
-	)
+	@Operation(operationId = "registrar-tara", summary = "Regitra la tara de una orden.", description = "Permite registrar la tara de uns orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion.")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Datos de la tara a registrar.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Detalle básico de ejemplo", description = "Ejemplo de cuerpo válido para registrar una tara.", value = """
+					        {
+					            "numeroOrden": 1234,
+					"pesoInicial": 15000.0
+					        }
+					        """)
+	}))
 	@ApiResponses(value = {
-    	@ApiResponse(
-			responseCode = "201",
-			description = "Tara registrada correctamente. Devuelve la contraseña de activacion en formato JSON.",
-			content = @Content(
-				mediaType = "application/json",
-				examples = @ExampleObject(
-					name = "Tara registrada",
-					value = """
+			@ApiResponse(responseCode = "201", description = "Tara registrada correctamente. Devuelve la contraseña de activacion en formato JSON.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Tara registrada", value = """
 					{
 					 "message": "contrasenaActivacion: 18685",
 					 "code": 201
 					}
-					"""
-				))
-    	),
-    	@ApiResponse(
-    	    responseCode = "400",
-    	    description = "La tara enviada es inválida o faltan campos obligatorios.",
-    	    content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Tara invalida",
-                value = """
-                {
-				 "message": "valor de peso inicial invalido",
-				 "code": 400,
-				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
-                }
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "404",
-    	    description = "No se encontró la orden.",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Orden no encontrada",
-                value = """
-                {
+					"""))),
+			@ApiResponse(responseCode = "400", description = "La tara enviada es inválida o faltan campos obligatorios.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Tara invalida", value = """
+					           {
+					"message": "valor de peso inicial invalido",
+					"code": 400,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "404", description = "No se encontró la orden.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					           {
 					"message": "No se encuentra la orden de numero:123475",
-    				"code": 404,
-					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"		
-                }
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "409",
-    	    description = "La orden asociada está en un estado inválido para esta operación.",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Estado invalido",
-                value = """
-                {
-					"message": "estado de orden PESAJE_INICIAL_REGISTRADO invalido",
-    				"code": 409,
-    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: estado de orden PESAJE_INICIAL_REGISTRADO invalido"
-				}
-                """
-            ))
-    	),
-    	@ApiResponse(
-    	    responseCode = "500",
-    	    description = "Error interno del servidor.",
-			content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                name = "Error interno del servidor",
-                value = """
-                {
-				 	"message": null,
-    				"code": 500,
-    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
-				}
-                """
-            ))
-    	)
+								"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "409", description = "La orden asociada está en un estado inválido para esta operación.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Estado invalido", value = """
+					            {
+						"message": "estado de orden PESAJE_INICIAL_REGISTRADO invalido",
+									"code": 409,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: estado de orden PESAJE_INICIAL_REGISTRADO invalido"
+					}
+					            """))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					            {
+					 	"message": null,
+									"code": 500,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					            """)))
 	})
 
 	@PostMapping(value = "/tara")
@@ -461,7 +402,7 @@ public class OrdenController {
 		try {
 
 			Orden orden = ordenBusiness.registrarTara(httpEntity.getBody());
-			
+
 			StdSerializer<Orden> serializer = new ContrasenaActivacionSerializer(Orden.class, false);
 			String result = JsonUtils.getObjectMapper(Orden.class, serializer, null)
 					.writeValueAsString(orden);
@@ -488,6 +429,7 @@ public class OrdenController {
 
 	/**
 	 * Deshabilitar una orden para carga
+	 * 
 	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
@@ -505,8 +447,7 @@ public class OrdenController {
 			return new ResponseEntity<>(response.build(HttpStatus.NOT_FOUND, e, e.getMessage()), HttpStatus.NOT_FOUND);
 		} catch (OrderInvalidStateException | OrderAlreadyLockedToLoadException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.CONFLICT, e, e.getMessage()), HttpStatus.CONFLICT);
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 
 		}
@@ -519,6 +460,50 @@ public class OrdenController {
 	 *                   el peso final
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
+	@Operation(operationId = "registrar-cierre", summary = "Registra el cierre de una orden.", description = "Permite registrar el cierre de una orden a partir de un cuerpo JSON.")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Datos del cierre a registrar.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Número de orden a cerrar y peso final para cerrar una orden", description = "Ejemplo de cuerpo válido para registrar el cierre de una orden.", value = """
+					        {
+					            "numeroOrden": 1234,
+					"pesoFinal": 28000.0
+					        }
+					        """)
+	}))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Cierre registrado correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Cierre registrado", value = """
+					{
+					 "code": 201
+					}
+					"""))),
+			@ApiResponse(responseCode = "400", description = "El JSON enviado es inválido o faltan campos obligatorios.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "JSON invalido", value = """
+					{
+					 "message": "El JSON de la orden es invalido",
+					 "code": 400,
+					 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: El JSON de la orden es invalido"
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró la orden.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					           {
+					"message": "No se encuentra la orden de numero:123475",
+								"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "409", description = "La orden asociada está en un estado inválido para esta operación.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Estado invalido", value = """
+					            {
+						"message": "estado de orden CERRADA invalido",
+									"code": 409,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: estado de orden CERRADA invalido"
+					}
+					            """))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					            {
+					 	"message": null,
+									"code": 500,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					            """)))
+	})
 	@PostMapping(value = "/registrar-cierre")
 	public ResponseEntity<?> registrarCierreOrden(HttpEntity<String> httpEntity) {
 		try {
@@ -548,6 +533,57 @@ public class OrdenController {
 	 * 
 	 * @return ConciliacionDTO serializado en JSON
 	 */
+	@Operation(operationId = "obtener-conciliacion", summary = "Obtiene la conciliación de una orden.", description = "Permite obtener la conciliación de una orden a partir de su número de orden.")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Número de orden para obtener la conciliación.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Número de orden de ejemplo", description = "Ejemplo de número de orden válido para obtener la conciliación.", value = """
+					        {
+					            "numeroOrden": 1234
+					        }
+					        """)
+	}))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Conciliación obtenida correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Conciliación obtenida", value = """
+					{
+						"Pesaje inicial": 10000.0,
+						"Pesaje final": 32000.0,
+						"Producto cargado": 20000.0,
+						"Neto por balanza": 22000.0,
+						"Diferencia entre balanza y caudalímetro": 2000.0,
+						"Promedio caudal": 15.3,
+						"Promedio temperatura": 25.5,
+						"Promedio densidad": 0.82
+}
+					}
+					"""))),
+			@ApiResponse(responseCode = "400", description = "El número de orden proporcionado no es válido.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Número de orden inválido", value = """
+					{
+					 "message": "El numero de orden debe ser un numero valido",
+					 "code": 400,
+					 "devInfo": "java.lang.NumberFormatException: For input string: \"abc\""
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró la orden.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					           {
+					"message": "No se encuentra la orden de numero:123475",
+								"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "409", description = "La orden está en un estado inválido para obtener la conciliación.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Estado inválido", value = """
+					            {
+						"message": "La orden numero 12345 no se encuentra cerrada",
+									"code": 409,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: La orden numero 12345 no se encuentra cerrada"
+					}
+					            """))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					            {
+					 	"message": null,
+									"code": 500,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					            """)))
+	})
 	@GetMapping("/conciliacion/{numeroOrden}")
 	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden) {
 		try {
