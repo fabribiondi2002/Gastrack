@@ -180,6 +180,131 @@ public class OrdenController {
 	 *                   la contrasena de activacion
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
+
+	@Operation(
+    	operationId = "habilitar-carga",
+    	summary = "Habilita la carga de una orden.",
+    	description = "Permite habilitar la carga de una orden a partir de un cuerpo JSON. Si se registra correctamente, devuelve la contraseña de activacion."
+	)
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    	required = true,
+    	description = "Datos de la carga a habilitar.",
+    	content = @Content(
+    	    mediaType = "application/json",
+    	    schema = @Schema(implementation = Detalle.class),
+    	    examples = {
+    	        @ExampleObject(
+    	            name = "Ejemplo válido",
+    	            summary = "Detalle básico de ejemplo",
+    	            description = "Ejemplo de cuerpo válido para habilitar carga.",
+    	            value = """
+    	            {
+    	                "numero_orden": 123485,
+    					"contrasenaActivacion": "67689"
+    	            }
+    	            """
+    	        )
+    	    }
+    	)
+	)
+	@ApiResponses(value = {
+    	@ApiResponse(
+			responseCode = "201",
+			description = "Carga habilitada correctamente. Devuelve el preset en formato JSON.",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(
+					name = "Carga habilitada",
+					value = """
+					{
+					 "message": "preset:15000.0",
+					 "code": 201
+					}
+					"""
+				))
+    	),
+    	@ApiResponse(
+    	    responseCode = "400",
+    	    description = "La tara enviada es inválida o faltan campos obligatorios.",
+    	    content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Tara invalida",
+                value = """
+                {
+				 "message": "valor de peso inicial invalido",
+				 "code": 400,
+				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.InvalidOrderAttributeException: valor de peso inicial invalido"
+                }
+                """
+            ))
+    	),
+		@ApiResponse(
+    	    responseCode = "401",
+    	    description = "La contraseña de activacion enviada es inválida.",
+    	    content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Contraseña de activacion invalida",
+                value = """
+                {
+				 "message": "La contrasena de activacion no tiene formato valido",
+				 "code": 401,
+				 "devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException: La contrasena de activacion no tiene formato valido"
+                }
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "404",
+    	    description = "No se encontró la orden",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Orden no encontrada",
+                value = """
+                {
+					"message": "No se encuentra la orden de numero:123475",
+    				"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"		
+                }
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "409",
+    	    description = "La orden asociada está en un estado inválido para esta operación.",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Estado invalido",
+                value = """
+                {
+					"message": "La orden numero 123485 ya se encuentra autorizada para carga",
+    				"code": 409,
+    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderAlreadyAuthorizedToLoadException: La orden numero 123485 ya se encuentra autorizada para carga"
+				}
+                """
+            ))
+    	),
+    	@ApiResponse(
+    	    responseCode = "500",
+    	    description = "Error interno del servidor.",
+			content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                name = "Error interno del servidor",
+                value = """
+                {
+				 	"message": null,
+    				"code": 500,
+    				"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+				}
+                """
+            ))
+    	)
+	})
+
 	@PostMapping(value = "/carga/habilitar")
 	public ResponseEntity<?> habilitarCarga(HttpEntity<String> httpEntity) {
 		try {
@@ -283,16 +408,16 @@ public class OrdenController {
     	),
     	@ApiResponse(
     	    responseCode = "404",
-    	    description = "No se encontró la orden o recurso asociado al detalle.",
+    	    description = "No se encontró la orden.",
 			content = @Content(
             mediaType = "application/json",
             examples = @ExampleObject(
-                name = "Orden no encontrado",
+                name = "Orden no encontrada",
                 value = """
                 {
-					"message": "No se encuentra la orden de numero:98776",
+					"message": "No se encuentra la orden de numero:123475",
     				"code": 404,
-					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:98776"		
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"		
                 }
                 """
             ))
