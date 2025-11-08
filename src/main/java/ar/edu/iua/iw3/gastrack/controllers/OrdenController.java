@@ -466,11 +466,12 @@ public class OrdenController {
 			StdSerializer<Orden> serializer = new PresetSerializer(Orden.class, false);
 			String result = JsonUtils.getObjectMapper(Orden.class, serializer, null)
 					.writeValueAsString(orden);
+			Object jsonResult = new ObjectMapper().readValue(result, Object.class);
 
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_ORDEN + "/" + orden.getId());
 
-			return new ResponseEntity<>(result, responseHeaders, HttpStatus.CREATED);
+			return new ResponseEntity<>(jsonResult, responseHeaders, HttpStatus.CREATED);
 		} catch (BusinessException | JsonProcessingException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
