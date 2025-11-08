@@ -32,4 +32,11 @@ public interface DetalleRepository extends JpaRepository<Detalle, Long> {
      * @return El detalle más reciente asociado a ese ID de orden.
      */
     Optional<Detalle> findTopByOrdenIdOrderByFechaDesc(long ordenId);
+
+    /**
+     * Filtrar por el ID de la Orden directamente.
+     * @param ordenId El ID de la Orden por la cual se debe filtrar.
+     * @return El primer detalle asociado a ese ID de orden.
+     */
+    Optional<Detalle> findTopByOrdenIdOrderByFechaAsc(long ordenId);
 }
