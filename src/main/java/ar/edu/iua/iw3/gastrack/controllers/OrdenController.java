@@ -34,6 +34,7 @@ import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,15 +63,39 @@ public class OrdenController {
 
 	/**
 	 * Listar ordenes por estado
-	 * 
+	 *
 	 * @param status Estado de la orden
 	 * @return Lista de ordenes
 	 * @throws NotFoundException Si no se encuentran ordenes con el estado
 	 *                           especificado
 	 * @throws BusinessException Si ocurre un error no previsto
 	 */
+	@Operation(operationId = "listar-ordenes-por-estado", summary = "Lista las órdenes por estado.", description = "Permite listar las órdenes filtradas por su estado.")
+	@Parameter(description = "Estado de la orden. Ejemplos: PENDIENTE, ENTREGADA, CANCELADA", required = true, example = "PENDIENTE")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Órdenes listadas correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Ordenes por estado", summary = "Lista de órdenes filtradas por estado", description = "Ejemplo de respuesta JSON al listar órdenes por estado.", value = """
+					[
+					    {
+					        "id": 1,
+					        "numeroOrden": 1234,
+					        "estado": "PENDIENTE",
+					        "codigoExterno": "ejemploCodigoExterno"
+					    },
+					    {
+					        "id": 2,
+					        "numeroOrden": 5678,
+					        "estado": "PENDIENTE",
+					        "codigoExterno": "otroCodigoExterno"
+					    }
+					]
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontraron órdenes con el estado especificado."),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+	})
 	@GetMapping(value = "/by-status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> list(@PathVariable Orden.Estado status) {
+	public ResponseEntity<?> list(
+
+			@PathVariable Orden.Estado status) {
 		try {
 			return new ResponseEntity<>(ordenBusiness.listByStatus(status), HttpStatus.OK);
 		} catch (BusinessException e) {
@@ -89,6 +114,33 @@ public class OrdenController {
 	 * @throws NotFoundException Si no existe una orden con ese id
 	 * @throws BusinessException Si ocurre un error no previsto
 	 */
+	@Operation(operationId = "obtener-orden-por-id", summary = "Obtiene una orden por su ID.", description = "Permite obtener una orden específica utilizando su ID único.")
+	@Parameter(description = "ID de la orden a obtener. Ejemplo: 1", required = true, example = "1")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Orden obtenida correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden por ID", summary = "Orden obtenida por su ID", description = "Ejemplo de respuesta JSON al obtener una orden por su ID.", value = """
+					{
+					    "id": 1,
+					    "numeroOrden": 1234,
+					    "estado": "PENDIENTE",
+					    "codigoExterno": "ejemploCodigoExterno",
+					    // Otros campos relevantes de la orden
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró una orden con el ID especificado.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					{
+						"message": "No se encontró una orden con ID: 1",
+						"code": 404,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encontró una orden con ID: 1"
+					}
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+					 	"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<?> load(@PathVariable long id) {
 		try {
@@ -109,6 +161,33 @@ public class OrdenController {
 	 * @throws NotFoundException Si no existe una orden con ese codigo externo
 	 * @throws BusinessException Si ocurre un error no previsto
 	 */
+	@Operation(operationId = "obtener-orden-por-codigo-externo", summary = "Obtiene una orden por su código externo.", description = "Permite obtener una orden específica utilizando su código externo único.")
+	@Parameter(description = "Código externo de la orden a obtener. Ejemplo: ejemploCodigoExterno", required = true, example = "ejemploCodigoExterno")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Orden obtenida correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden por código externo", summary = "Orden obtenida por su código externo", description = "Ejemplo de respuesta JSON al obtener una orden por su código externo.", value = """
+					{
+					    "id": 1,
+					    "numeroOrden": 1234,
+					    "estado": "PENDIENTE",
+					    "codigoExterno": "ejemploCodigoExterno",
+					    // Otros campos relevantes de la orden
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró una orden con el código externo especificado.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					{
+						"message": "No se encontró una orden con código externo: ejemploCodigoExterno",
+						"code": 404,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encontró una orden con código externo: ejemploCodigoExterno"
+					}
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+					 	"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
 	@GetMapping(value = "/codigoExterno/{codigoExterno}")
 	public ResponseEntity<?> loadByCodigoExterno(@PathVariable String codigoExterno) {
 		try {
@@ -121,6 +200,41 @@ public class OrdenController {
 		}
 	}
 
+	/**
+	 * Obtener una orden por numero de orden
+	 * 
+	 * @param numeroOrden Numero de la orden
+	 * @return Orden cargada
+	 * @throws NotFoundException Si no existe una orden con ese numero de orden
+	 * @throws BusinessException Si ocurre un error no previsto
+	 */
+	@Operation(operationId = "obtener-orden-por-numero-de-orden", summary = "Obtiene una orden por su número de orden.", description = "Permite obtener una orden específica utilizando su número de orden único.")
+	@Parameter(description = "Número de orden de la orden a obtener. Ejemplo: 1234", required = true, example = "1234")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Orden obtenida correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden por número de orden", summary = "Orden obtenida por su número de orden", description = "Ejemplo de respuesta JSON al obtener una orden por su número de orden.", value = """
+					{
+					    "id": 1,
+					    "numeroOrden": 1234,
+					    "estado": "PENDIENTE",
+					    "codigoExterno": "ejemploCodigoExterno",
+					    // Otros campos relevantes de la orden
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró una orden con el número de orden especificado.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					{
+						"message": "No se encontró una orden con número de orden: 1234",
+						"code": 404,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encontró una orden con número de orden: 1234"
+					}
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+					 	"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
 	@GetMapping(value = "/numeroOrden/{numeroOrden}")
 	public ResponseEntity<?> loadByNumeroOrden(@PathVariable long numeroOrden) {
 		try {
@@ -133,6 +247,36 @@ public class OrdenController {
 		}
 	}
 
+	/**
+	 * Eliminar una orden por id
+	 * 
+	 * @param id Id de la orden
+	 * @return Respuesta HTTP con el estado de la operacion
+	 */
+	@Operation(operationId = "eliminar-orden-por-id", summary = "Elimina una orden por su ID.", description = "Permite eliminar una orden específica utilizando su ID único.")
+	@Parameter(description = "ID de la orden a eliminar. Ejemplo: 1", required = true, example = "1")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Orden eliminada correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden eliminada", summary = "Orden eliminada por su ID", description = "Ejemplo de respuesta JSON al eliminar una orden por su ID.", value = """
+					{
+					    "message": "Orden eliminada correctamente",
+					    "code": 200
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró una orden con el ID especificado.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					{
+						"message": "No se encontró una orden con ID: 1",
+						"code": 404,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encontró una orden con ID: 1"
+					}
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+					 	"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> delete(@PathVariable long id) {
 		try {
@@ -433,6 +577,42 @@ public class OrdenController {
 	 * @param httpEntity Entidad HTTP que contiene el JSON con el numero de orden
 	 * @return Respuesta HTTP con el estado de la operacion
 	 */
+	@Operation(operationId = "deshabilitar-orden-para-carga", summary = "Deshabilita una orden para carga.", description = "Permite deshabilitar una orden para carga a partir de un cuerpo JSON.")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Datos de la orden a deshabilitar.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
+			@ExampleObject(name = "Ejemplo válido", summary = "Número de orden a deshabilitar", description = "Ejemplo de cuerpo válido para deshabilitar una orden para carga.", value = """
+					{
+					    "numeroOrden": 1234
+					}
+					""")
+	}))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Orden deshabilitada correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden deshabilitada", value = """
+					{
+					 "code": 201
+					}
+					"""))),
+			@ApiResponse(responseCode = "404", description = "No se encontró la orden.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Orden no encontrada", value = """
+					           {
+					"message": "No se encuentra la orden de numero:123475",
+								"code": 404,
+					"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:123475"
+					           }
+					           """))),
+			@ApiResponse(responseCode = "409", description = "La orden asociada está en un estado inválido para esta operación.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Estado invalido", value = """
+					            {
+						"message": "estado de orden PENDIENTE invalido",
+									"code": 409,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateException: estado de orden PENDIENTE invalido"
+					}
+					            """))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					            {
+					 	"message": null,
+									"code": 500,
+									"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					            """)))
+	})
 	@PostMapping("/carga/deshabilitar")
 	public ResponseEntity<?> deshabilitarOrdenParaCarga(HttpEntity<String> httpEntity) {
 		try {
@@ -534,27 +714,21 @@ public class OrdenController {
 	 * @return ConciliacionDTO serializado en JSON
 	 */
 	@Operation(operationId = "obtener-conciliacion", summary = "Obtiene la conciliación de una orden.", description = "Permite obtener la conciliación de una orden a partir de su número de orden.")
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "Número de orden para obtener la conciliación.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Detalle.class), examples = {
-			@ExampleObject(name = "Ejemplo válido", summary = "Número de orden de ejemplo", description = "Ejemplo de número de orden válido para obtener la conciliación.", value = """
-					        {
-					            "numeroOrden": 1234
-					        }
-					        """)
-	}))
+	@Parameter(description = "Número de orden de la orden cuya conciliación se desea obtener. Ejemplo: 12345", required = true, example = "12345")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Conciliación obtenida correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Conciliación obtenida", value = """
-					{
-						"Pesaje inicial": 10000.0,
-						"Pesaje final": 32000.0,
-						"Producto cargado": 20000.0,
-						"Neto por balanza": 22000.0,
-						"Diferencia entre balanza y caudalímetro": 2000.0,
-						"Promedio caudal": 15.3,
-						"Promedio temperatura": 25.5,
-						"Promedio densidad": 0.82
-}
+										{
+											"Pesaje inicial": 10000.0,
+											"Pesaje final": 32000.0,
+											"Producto cargado": 20000.0,
+											"Neto por balanza": 22000.0,
+											"Diferencia entre balanza y caudalímetro": 2000.0,
+											"Promedio caudal": 15.3,
+											"Promedio temperatura": 25.5,
+											"Promedio densidad": 0.82
 					}
-					"""))),
+										}
+										"""))),
 			@ApiResponse(responseCode = "400", description = "El número de orden proporcionado no es válido.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Número de orden inválido", value = """
 					{
 					 "message": "El numero de orden debe ser un numero valido",

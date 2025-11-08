@@ -22,6 +22,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderNotAuthorizedToLoad
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IDetalleBusiness;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,6 +47,61 @@ public class DetalleController {
     @Autowired
 	private IStandardResponseBusiness response;
 
+	@Operation(
+		operationId = "get-detalles-by-orden-id",
+		summary = "Obtiene la lista de detalles asociados a una orden específica.",
+		description = "Recupera todos los detalles vinculados a la orden identificada por su ID. Devuelve un arreglo JSON con los detalles encontrados."
+	)
+	@Parameter(
+		name = "id",
+		description = "ID de la orden para la cual se desean obtener los detalles.",
+		required = true,
+		example = "1234"
+	)
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "Detalles recuperados correctamente.",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = Detalle.class)
+			)
+		),
+		@ApiResponse(
+			responseCode = "404",
+			description = "No se encontró la orden o no tiene detalles asociados.",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(
+					name = "Orden no encontrada",
+					value = """
+					{
+						"message": "No se encuentra la orden de numero:98776",
+						"code": 404,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException: No se encuentra la orden de numero:98776"
+					}
+					"""
+				)
+			)
+		),
+		@ApiResponse(
+			responseCode = "500",
+			description = "Error interno del servidor.",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(
+					name = "Error interno",
+					value = """
+					{
+						"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					"""
+				)
+			)
+		)
+	})
     @GetMapping(value = "/by-orden/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> list(@PathVariable long id) {
 		try {
