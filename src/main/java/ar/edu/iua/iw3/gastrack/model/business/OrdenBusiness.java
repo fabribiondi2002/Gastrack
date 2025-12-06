@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ar.edu.iua.iw3.gastrack.model.Detalle;
+//import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
@@ -442,24 +442,6 @@ public class OrdenBusiness implements IOrdenBusiness {
         if (pesajeFinal.getPesoFinal() <= orden.getPesoInicial()) {
             throw InvalidOrderAttributeException.builder().message("valor de peso final es menor al del peso inicial").build();
         }
-        Detalle primerDetalle;
-        try {
-            primerDetalle = detalleBusiness.getFirstDetailByOrderId(orden.getId());
-        } catch (NotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw NotFoundException.builder()
-                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
-        }
-        orden.setFechaPrimerMedicion(primerDetalle.getFecha());
-
-        Detalle ultimoDetalle;
-        try {
-            ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
-        } catch (NotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw NotFoundException.builder()
-                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
-        }
         double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
         orden.setFechaPesajeFinal(new java.util.Date());
@@ -469,12 +451,6 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setPromedioCaudal(promedios.get("promedioCaudal"));
         orden.setPromedioDensidad(promedios.get("promedioDensidad"));
         orden.setPromedioTemperatura(promedios.get("promedioTemperatura"));
-
-        orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
-        orden.setUltimaDensidad(ultimoDetalle.getDensidad());
-        orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
-        orden.setUltimoCaudal(ultimoDetalle.getCaudal());
-        orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
         orden.siguienteEstado();
         return ordenDAO.save(orden);
     }

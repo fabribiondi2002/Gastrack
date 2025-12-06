@@ -48,11 +48,15 @@ public final class DetalleManager {
             throw BusinessException.builder().ex(e).build();
         }
         
-        if(!last.isEmpty()) // hay mediciones previas
+        if(last.isEmpty()) // hay mediciones previas
+        {
+            filtradoDeDetalles(d,null);
+        }
+        else
         {
             filtradoDeDetalles(d,last.get());
             controlFrecuencia(d.getFecha(), last.get().getFecha(), frecuenciaMilis);
-        }     
+        }   
         
     }
     
@@ -66,7 +70,7 @@ public final class DetalleManager {
     private static void filtradoDeDetalles(Detalle d,Detalle last)
         throws InvalidDetailException
     {
-        if(d.getCaudal() <=0 || d.getMasaAcumulada() <= 0 || d.getMasaAcumulada() < last.getMasaAcumulada())
+        if(d.getCaudal() <=0 || d.getMasaAcumulada() <= 0 || (last != null && d.getMasaAcumulada() < last.getMasaAcumulada()))
         {
             log.trace("Detalle no paso el filtrado: Caudal: "+d.getCaudal()+", MasaAcumulada="+d.getMasaAcumulada());
             throw InvalidDetailException.builder().message("Detalle no valido").build();

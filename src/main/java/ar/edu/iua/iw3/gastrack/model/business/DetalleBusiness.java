@@ -142,6 +142,18 @@ public class DetalleBusiness implements IDetalleBusiness{
         detalle.setOrden(ord);
         detalle.setFecha(new Date());
         DetalleManager.manage(detalleDAO, detalle,frecuenciaMuestreoMilis);
+
+        if(ord.getFechaPrimerMedicion() == null)
+        {
+            ord.setFechaPrimerMedicion(detalle.getFecha());
+        }
+        ord.setFechaUltimoMedicion(detalle.getFecha());
+        ord.setUltimaDensidad(detalle.getDensidad());
+        ord.setUltimaTemperatura(detalle.getTemperatura());
+        ord.setUltimoCaudal(detalle.getCaudal());
+        ord.setUltimaMasaAcumulada(detalle.getMasaAcumulada());
+        ordenBusiness.update(ord);
+
 		return detalleDAO.save(detalle);
     }
 
