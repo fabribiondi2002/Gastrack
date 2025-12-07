@@ -26,6 +26,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Filtro de autorización JWT para validar tokens en las solicitudes entrantes.
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-12-07
+ */
+
+
 @Slf4j
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 	public JWTAuthorizationFilter(AuthenticationManager authenticationManager) {

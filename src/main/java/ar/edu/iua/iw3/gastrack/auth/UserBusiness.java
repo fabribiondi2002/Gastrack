@@ -10,7 +10,14 @@ import org.springframework.stereotype.Service;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-
+/**
+ * Implementación de la interfaz IUserBusiness para la gestión de usuarios.
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-12-07
+ */
 @Service
 @Slf4j
 public class UserBusiness implements IUserBusiness {

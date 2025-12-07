@@ -20,7 +20,14 @@ import ar.edu.iua.iw3.gastrack.auth.User;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-
+/**
+ * Gestor de autenticación personalizado que utiliza IUserBusiness para validar usuarios.
+ * @author Leandro Biondi
+ * @author Benjamin Vargas
+ * @author Antonella Badami
+ * @version 1.0
+ * @since 2025-12-07
+ */
 @Slf4j
 public class CustomAuthenticationManager implements AuthenticationManager {
 
