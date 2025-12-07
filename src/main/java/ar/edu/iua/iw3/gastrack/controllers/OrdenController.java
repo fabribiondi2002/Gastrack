@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -94,6 +95,7 @@ public class OrdenController {
 			@ApiResponse(responseCode = "404", description = "No se encontraron órdenes con el estado especificado."),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor.")
 	})
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
 	@GetMapping(value = "/by-status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> list(
 
@@ -372,7 +374,7 @@ public class OrdenController {
 					}
 					""")))
 	})
-
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_SAP')")
 	@PostMapping(value = "")
 	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
 		try {
@@ -457,7 +459,8 @@ public class OrdenController {
 					}
 					            """)))
 	})
-
+	
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CS')")
 	@PostMapping(value = "/carga/habilitar")
 	public ResponseEntity<?> habilitarCarga(HttpEntity<String> httpEntity) {
 		try {
@@ -546,7 +549,7 @@ public class OrdenController {
 					}
 					            """)))
 	})
-
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_TMS')")
 	@PostMapping(value = "/tara")
 	public ResponseEntity<?> registrarTara(HttpEntity<String> httpEntity) {
 		try {
@@ -618,6 +621,7 @@ public class OrdenController {
 					}
 					            """)))
 	})
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CS')")
 	@PostMapping("/carga/deshabilitar")
 	public ResponseEntity<?> deshabilitarOrdenParaCarga(HttpEntity<String> httpEntity) {
 		try {
@@ -689,6 +693,7 @@ public class OrdenController {
 					}
 					            """)))
 	})
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_TMS')")
 	@PostMapping(value = "/registrar-cierre")
 	public ResponseEntity<?> registrarCierreOrden(HttpEntity<String> httpEntity) {
 		try {
