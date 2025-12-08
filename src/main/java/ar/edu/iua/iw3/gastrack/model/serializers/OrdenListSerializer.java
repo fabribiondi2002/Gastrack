@@ -28,11 +28,7 @@ public class OrdenListSerializer extends StdSerializer<Orden>{
         gen.writeNumberField("numero-orden",value.getNumeroOrden());
         gen.writeStringField("estado",value.getEstado().toString().replace("_", " "));
         gen.writeStringField("camion", value.getCamion().getPatente());
-        gen.writeStringField("preset", value.getCamion().getPatente());
-        gen.writeNumberField("carga", value.getUltimaMasaAcumulada());
-        gen.writeNumberField("temperatura", value.getUltimaTemperatura());
-        gen.writeNumberField("densidad", value.getUltimaDensidad());
-        gen.writeNumberField("caudal", value.getUltimoCaudal());
+        gen.writeNumberField("preset", value.getPreset());
         gen.writeEndObject();	
 
 	}
