@@ -54,7 +54,7 @@ public class SecurityConfiguration {
 	PasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
+/* 
 	@Bean
 	WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
@@ -64,7 +64,7 @@ public class SecurityConfiguration {
 			}
 		};
 	}
-
+*/
 	@Autowired
 	private IUserBusiness userBusiness;
 
@@ -75,6 +75,8 @@ public class SecurityConfiguration {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+		http.cors(); 
 
 		// CORS: https://developer.mozilla.org/es/docs/Web/HTTP/CORS
 
@@ -92,19 +94,18 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource()
-	{
+	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		
-		config.setAllowedOrigins(List.of("http://127.0.0.1:3000"));
-		config.setAllowedMethods(List.of("GET","POST"));
-		config.setAllowedHeaders(List.of("Content-Type","Authorization"));
+		config.setAllowedOrigins(List.of("http://localhost:3000"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		config.setAllowedHeaders(List.of("*")); 
 		config.setAllowCredentials(false);
+
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/api/v1/**", config);
+		source.registerCorsConfiguration("/**", config); 
 
 		return source;
-		
 	}
+
 
 }
