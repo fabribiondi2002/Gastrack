@@ -31,9 +31,10 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateExcepti
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.ContrasenaActivacionSerializer;
-import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.model.serializers.NumeroOrdenSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.OrdenListSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,6 +44,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -157,6 +159,22 @@ public class OrdenController {
 		}
 	}
 
+	@GetMapping(value = "")
+	public ResponseEntity<?> list() {
+		try
+		{
+			StdSerializer<Orden> ser =  new OrdenListSerializer(Orden.class,false);
+			String result = JsonUtils.getObjectMapper(Orden.class, ser, null)
+			.writeValueAsString(ordenBusiness.list());
+			Object jsonResult = new ObjectMapper().readValue(result, Object.class);
+			return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+		} catch (BusinessException | JsonProcessingException e) {
+
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+
+		}
+	}
 	/**
 	 * Obtener una orden por codigo externo
 	 * 

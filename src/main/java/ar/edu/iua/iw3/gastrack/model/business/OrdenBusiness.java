@@ -491,4 +491,17 @@ public class OrdenBusiness implements IOrdenBusiness {
         return conciliacionDTO;
     }
 
+    /**
+     * Listar todas las ordenes por fecha descendente
+     */
+    @Override
+    public List<Orden> list() throws BusinessException {
+        try {
+            return ordenDAO.findAll();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+    }
+
 }
