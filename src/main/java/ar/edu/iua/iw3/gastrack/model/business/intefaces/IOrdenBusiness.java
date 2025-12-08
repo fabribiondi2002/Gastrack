@@ -24,6 +24,8 @@ public interface IOrdenBusiness {
 
     public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException;
 
+    public List<Orden> list() throws BusinessException;
+
     public Orden load(long id) throws NotFoundException, BusinessException;
 
     public Orden add(Orden orden) throws FoundException, BusinessException;
