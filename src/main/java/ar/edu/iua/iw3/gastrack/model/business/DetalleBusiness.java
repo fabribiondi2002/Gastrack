@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.business.events.LoadEvent;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
@@ -47,6 +49,9 @@ public class DetalleBusiness implements IDetalleBusiness{
 	private DetalleRepository detalleDAO;
     @Autowired
 	private IOrdenBusiness ordenBusiness;
+    
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * Listar todos los detalles
@@ -89,6 +94,13 @@ public class DetalleBusiness implements IDetalleBusiness{
 
     @Value("${detalle.frecuencia.muestreo.milis:10000}")
     private long frecuenciaMuestreoMilis; // Frecuencia de muestreo en milisegundos
+
+    @Value("${detalle.umbral.temperatura.c:230.0}")
+    private double umbralTemperatura; // Umbral de temperatura en grados Celsius
+
+    @Value("#{'${detalles.alertas.correos}'.split(',')}")
+    private List<String> correosAlerta; // Lista de correos para alertas
+
 
      /**
      * Agregar un detalle
@@ -142,6 +154,11 @@ public class DetalleBusiness implements IDetalleBusiness{
         detalle.setOrden(ord);
         detalle.setFecha(new Date());
         DetalleManager.manage(detalleDAO, detalle,frecuenciaMuestreoMilis);
+
+        if(detalle.getTemperatura() > umbralTemperatura)
+        {
+            applicationEventPublisher.publishEvent(new LoadEvent(detalle, correosAlerta,ord,LoadEvent.TypeEvent.HIGH_TEMP));
+        }
 
         if(ord.getFechaPrimerMedicion() == null)
         {

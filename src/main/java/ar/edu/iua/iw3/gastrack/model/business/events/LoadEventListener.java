@@ -17,6 +17,7 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 	}
 
 	private void handleHighTemp(LoadEvent event) {
-		log.info("Exceso de temperatura detectada ");
+		//TO-DO Lógica para manejar el evento de alta temperatura
+		log.info("Exceso de temperatura detectada en la orden ID: " + event.getOrden().getId() + ". Enviando alertas a: " + String.join(", ", event.getContacts()));
 	}
 }
