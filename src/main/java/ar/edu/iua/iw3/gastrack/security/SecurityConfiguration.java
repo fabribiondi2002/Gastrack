@@ -1,5 +1,7 @@
 package ar.edu.iua.iw3.gastrack.security;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -84,6 +89,22 @@ public class SecurityConfiguration {
 		http.addFilter(new JWTAuthorizationFilter(authenticationManager()));
 		return http.build();
 
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource()
+	{
+		CorsConfiguration config = new CorsConfiguration();
+		
+		config.setAllowedOrigins(List.of("http://127.0.0.1:3000"));
+		config.setAllowedMethods(List.of("GET","POST"));
+		config.setAllowedHeaders(List.of("Content-Type","Authorization"));
+		config.setAllowCredentials(false);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/api/v1/**", config);
+
+		return source;
+		
 	}
 
 }
