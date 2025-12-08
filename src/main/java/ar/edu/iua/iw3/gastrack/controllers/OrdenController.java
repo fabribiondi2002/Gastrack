@@ -157,9 +157,46 @@ public class OrdenController {
 		}
 	}
 
-	
+	/**
+	 * Listar todas las ordenes
+	 *
+	 * @return Lista de todas las ordenes
+	 * @throws BusinessException Si ocurre un error no previsto
+	 */
+	@Operation(operationId = "listar-todas-ordenes", summary = "Lista todas las órdenes.", description = "Permite obtener un listado completo de todas las órdenes del sistema.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Órdenes listadas correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista de todas las órdenes", summary = "Lista completa de órdenes", description = "Ejemplo de respuesta JSON al listar todas las órdenes.", value = """
+					[
+					    {
+					        "numero-orden": 1234,
+					        "estado": "PENDIENTE",
+					        "camion": "ABC123",
+					        "preset": 50000.0
+					    },
+					    {
+					        "numero-orden": 5678,
+					        "estado": "CERRADA",
+					        "camion": "XYZ789",
+					        "preset": 75000.0
+					    },
+					    {
+					        "numero-orden": 9101,
+					        "estado": "RECIBIDA",
+					        "camion": "DEF456",
+					        "preset": 60000.0
+					    }
+					]
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+						"message": null,
+						"code": 500,
+						"devInfo": "ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException"
+					}
+					""")))
+	})
 	@GetMapping(value = "")
-	public ResponseEntity<?> list() {
+	public ResponseEntity<?> listAll() {
 		try
 		{
 			StdSerializer<Orden> ser =  new OrdenListSerializer(Orden.class,false);
