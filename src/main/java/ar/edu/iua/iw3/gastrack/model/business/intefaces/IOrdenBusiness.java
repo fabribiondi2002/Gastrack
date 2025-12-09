@@ -49,4 +49,6 @@ public interface IOrdenBusiness {
     public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException;
 
     public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException;
+
+    public byte[] generarConciliacionPdf(ConciliacionDTO conciliacion);
 }
