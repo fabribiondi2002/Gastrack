@@ -85,7 +85,7 @@ public class SecurityConfiguration {
 		http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, Constants.URL_LOGIN).permitAll()
 				.requestMatchers("/v3/api-docs/**").permitAll().requestMatchers("/swagger-ui.html").permitAll()
 				.requestMatchers("/swagger-ui/**").permitAll().requestMatchers("/ui/**").permitAll()
-				.requestMatchers("/demo/**").permitAll().anyRequest().authenticated());
+				.requestMatchers("/demo/**").permitAll().requestMatchers("/cabecera-websocket/**").permitAll().anyRequest().authenticated());
 		//http.httpBasic(Customizer.withDefaults());
 		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilter(new JWTAuthorizationFilter(authenticationManager()));
@@ -99,7 +99,7 @@ public class SecurityConfiguration {
 		config.setAllowedOrigins(List.of("http://localhost:3000"));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*")); 
-		config.setAllowCredentials(false);
+		config.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config); 
