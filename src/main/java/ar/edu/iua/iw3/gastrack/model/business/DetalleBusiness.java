@@ -29,6 +29,7 @@ import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import ar.edu.iua.iw3.gastrack.websocket.service.CabeceraWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,6 +53,9 @@ public class DetalleBusiness implements IDetalleBusiness{
     
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private CabeceraWebSocketService wsService;
 
     /**
      * Listar todos los detalles
@@ -170,6 +174,7 @@ public class DetalleBusiness implements IDetalleBusiness{
         ord.setUltimoCaudal(detalle.getCaudal());
         ord.setUltimaMasaAcumulada(detalle.getMasaAcumulada());
         ordenBusiness.update(ord);
+        wsService.enviarCabecera(ord);
 
 		return detalleDAO.save(detalle);
     }
