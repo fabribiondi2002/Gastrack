@@ -1,5 +1,17 @@
-{"properties": [{
-  "name": "dev.info.enabled",
-  "type": "java.lang.String",
-  "description": "Permite ver el detalle de los logs a nivel desarrollador"
-}]}
+{"properties": [
+  {
+    "name": "dev.info.enabled",
+    "type": "java.lang.String",
+    "description": "Permite ver el detalle de los logs a nivel desarrollador"
+  },
+  {
+    "name": "detalles.alertas.correos",
+    "type": "java.lang.String",
+    "description": "Correos destinos para alertas"
+  },
+  {
+    "name": "detalle.umbral.temperatura.c",
+    "type": "java.lang.String",
+    "description": "Umbral de temperatura maximo que genera una alerta al ser superado"
+  }
+]}
