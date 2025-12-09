@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +32,10 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.OrderInvalidStateExcepti
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IOrdenBusiness;
 import ar.edu.iua.iw3.gastrack.model.serializers.ConciliacionSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.ContrasenaActivacionSerializer;
+import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.model.serializers.NumeroOrdenSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.OrdenListSerializer;
 import ar.edu.iua.iw3.gastrack.model.serializers.PresetSerializer;
-import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +45,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 
 /**
  * Controlador REST para la gestion de ordenes
@@ -199,11 +199,10 @@ public class OrdenController {
 	})
 	@GetMapping(value = "")
 	public ResponseEntity<?> listAll() {
-		try
-		{
-			StdSerializer<Orden> ser =  new OrdenListSerializer(Orden.class,false);
+		try {
+			StdSerializer<Orden> ser = new OrdenListSerializer(Orden.class, false);
 			String result = JsonUtils.getObjectMapper(Orden.class, ser, null)
-			.writeValueAsString(ordenBusiness.list());
+					.writeValueAsString(ordenBusiness.list());
 			Object jsonResult = new ObjectMapper().readValue(result, Object.class);
 			return new ResponseEntity<>(jsonResult, HttpStatus.OK);
 		} catch (BusinessException | JsonProcessingException e) {
@@ -213,6 +212,7 @@ public class OrdenController {
 
 		}
 	}
+
 	/**
 	 * Obtener una orden por codigo externo
 	 * 
@@ -515,7 +515,7 @@ public class OrdenController {
 					}
 					            """)))
 	})
-	
+
 	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CS')")
 	@PostMapping(value = "/carga/habilitar")
 	public ResponseEntity<?> habilitarCarga(HttpEntity<String> httpEntity) {
@@ -777,7 +777,7 @@ public class OrdenController {
 	 * 
 	 * @param numeroOrden Numero de la orden
 	 * 
-	 * @return ConciliacionDTO serializado en JSON
+	 * @return ConciliacionDTO serializado en JSON o en PDF segun el header Accept
 	 */
 	@Operation(operationId = "obtener-conciliacion", summary = "Obtiene la conciliación de una orden.", description = "Permite obtener la conciliación de una orden a partir de su número de orden.")
 	@Parameter(description = "Número de orden de la orden cuya conciliación se desea obtener. Ejemplo: 12345", required = true, example = "12345")
@@ -795,6 +795,8 @@ public class OrdenController {
 					}
 										}
 										"""))),
+			@ApiResponse(responseCode = "200", description = "Conciliación generada en formato PDF.", content = @Content(mediaType = "application/pdf")),
+
 			@ApiResponse(responseCode = "400", description = "El número de orden proporcionado no es válido.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Número de orden inválido", value = """
 					{
 					 "message": "El numero de orden debe ser un numero valido",
@@ -825,16 +827,31 @@ public class OrdenController {
 					            """)))
 	})
 	@GetMapping("/conciliacion/{numeroOrden}")
-	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden) {
+	public ResponseEntity<?> getConciliacion(@PathVariable String numeroOrden,
+			@RequestHeader(value = HttpHeaders.ACCEPT, required = false) String acceptHeader
+
+	) {
 		try {
 			ConciliacionDTO conciliacion = ordenBusiness.crearConciliacion(Long.parseLong(numeroOrden));
-			StdSerializer<ConciliacionDTO> serializer;
-			serializer = new ConciliacionSerializer(ConciliacionDTO.class, false);
-			String result = JsonUtils.getObjectMapper(ConciliacionDTO.class, serializer, null)
-					.writeValueAsString(conciliacion);
-			Object jsonResult = new ObjectMapper().readValue(result, Object.class);
+			if (acceptHeader != null && acceptHeader.contains(MediaType.APPLICATION_JSON_VALUE)) {
 
-			return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+				StdSerializer<ConciliacionDTO> serializer;
+				serializer = new ConciliacionSerializer(ConciliacionDTO.class, false);
+				String result = JsonUtils.getObjectMapper(ConciliacionDTO.class, serializer, null)
+						.writeValueAsString(conciliacion);
+				Object jsonResult = new ObjectMapper().readValue(result, Object.class);
+
+				return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+			}
+			byte[] pdf = ordenBusiness.generarConciliacionPdf(conciliacion);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_PDF);
+			headers.set(HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"conciliacion-" + numeroOrden + ".pdf\"");
+
+			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+
 		} catch (BusinessException | JsonProcessingException e) {
 			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);

@@ -8,7 +8,7 @@ import lombok.Setter;
 /*
  * DTO para la conciliacion de una orden
  * Contiene los campos necesarios para la conciliacion
- * pesajeInicial, pesajeFinal, productoCargado, netoBalanza,
+ * numeroOrden, codigoExterno, pesajeInicial, pesajeFinal, productoCargado, netoBalanza,
  * difBalanzaCaudalimetro, promedioCaudal, promedioTemperatura, promedioDensidad
  * @author Leandro Biondi
  * @author Antonella Badami
@@ -21,6 +21,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ConciliacionDTO {
+    private long numeroOrden;
+    private String codigoExterno;
     private double pesajeInicial;
     private double pesajeFinal;
     private double productoCargado;

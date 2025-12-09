@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
@@ -39,6 +38,7 @@ import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import ar.edu.iua.iw3.gastrack.util.PDFGenerator;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -479,6 +479,8 @@ public class OrdenBusiness implements IOrdenBusiness {
                     .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
                     .build();
         }
+        conciliacionDTO.setNumeroOrden(orden.getNumeroOrden());
+        conciliacionDTO.setCodigoExterno(orden.getCodigoExterno());
         conciliacionDTO.setPesajeInicial(orden.getPesoInicial());
         conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
         conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
@@ -503,5 +505,14 @@ public class OrdenBusiness implements IOrdenBusiness {
             throw BusinessException.builder().ex(e).build();
         }
     }
-
+    /**
+     * Generar el PDF de conciliación para una orden
+     * @param conciliacion ConciliacionDTO con los datos de la conciliación
+     * @return Array de bytes con el contenido del PDF
+     */
+    @Override
+    public byte[] generarConciliacionPdf(ConciliacionDTO conciliacion) {
+        PDFGenerator pdfGenerator = new PDFGenerator();
+        return pdfGenerator.generarConciliacionPdf(conciliacion);
+    }
 }
