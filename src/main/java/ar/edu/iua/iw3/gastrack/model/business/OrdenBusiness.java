@@ -311,7 +311,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion())) {
             throw BadActivationPasswordException.builder().message("La contrasena de activacion es incorrecta").build();
         }
-
+        
         orden.setCargaHabilitada(true);
 
         return update(orden);
