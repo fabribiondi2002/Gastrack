@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.util.EmailBusiness;
+import ar.edu.iua.iw3.gastrack.websocket.service.AlarmasWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,6 +15,9 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 
 	@Autowired
 	private EmailBusiness emailBusiness;
+
+	@Autowired
+	private AlarmasWebSocketService alarmasWebSocketService;
 
 	@Override
 	public void onApplicationEvent(LoadEvent event) {
@@ -25,6 +29,7 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 	private void handleHighTemp(LoadEvent event) {
 		log.info("Exceso de temperatura detectada en la orden nro: " + event.getOrden().getNumeroOrden());
 		try {
+			alarmasWebSocketService.enviarAlarmaTemperatura(event.getOrden(), ((Detalle) event.getSource()).getFecha(), ((Detalle) event.getSource()).getTemperatura());
 			emailBusiness.sendHighTempAlert(
 				event.getContacts(),
 	    		"Alerta de alta temperatura en la carga",
