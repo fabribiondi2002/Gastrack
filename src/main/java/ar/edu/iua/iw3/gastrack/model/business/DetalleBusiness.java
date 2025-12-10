@@ -341,5 +341,16 @@ public class DetalleBusiness implements IDetalleBusiness{
         }
         return r.get();
     }
+    @Override
+    public Date loadFirstDetailDate(long ordenId) throws NotFoundException, BusinessException {
+        Detalle detalle = getFirstDetailByOrderId(ordenId);
+        return detalle.getFecha();
+    }
+
+    @Override
+    public Date loadLastDetailDate(long ordenId) throws NotFoundException, BusinessException {
+        Detalle detalle = getLastDetailByOrderId(ordenId);
+        return detalle.getFecha();
+    }
 
 }

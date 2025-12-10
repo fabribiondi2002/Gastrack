@@ -313,7 +313,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         }
         
         orden.setCargaHabilitada(true);
-
+        orden.setFechaInicioCarga(new Date());
         return update(orden);
     }
 
@@ -402,7 +402,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
-        orden.setFechaCierreOrdenParaCarga(new Date());
+        orden.setFechaFinCarga(new Date());
         return update(orden);
 
     }
@@ -445,7 +445,8 @@ public class OrdenBusiness implements IOrdenBusiness {
         double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
         orden.setFechaPesajeFinal(new java.util.Date());
-
+        orden.setFechaPrimerMedicion(detalleBusiness.loadFirstDetailDate(orden.getId()));
+        orden.setFechaUltimoMedicion(detalleBusiness.loadLastDetailDate(orden.getId()));
         Map<String, Double> promedios;
         promedios = detalleBusiness.loadAverageDetails(orden.getId());
         orden.setPromedioCaudal(promedios.get("promedioCaudal"));
