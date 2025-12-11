@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class LoadEvent extends ApplicationEvent {
 	public enum TypeEvent {
-		HIGH_TEMP,
+		HIGH_TEMP
 	}
 	public LoadEvent(Object source, List<String> contacts,Orden orden, TypeEvent typeEvent) {
 		super(source);

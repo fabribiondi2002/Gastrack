@@ -1,9 +1,7 @@
 package ar.edu.iua.iw3.gastrack.websocket.dto;
 
 
-
-import java.util.Date;
-
+import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +14,7 @@ import lombok.Setter;
 public class RespuestaAlarma {
 
     private long numeroOrden;
-    private Date fechaAceptacion;
+    private TipoAlarma tipoAlarma;
     private String observarcion;
+    private String usermail;
 }
