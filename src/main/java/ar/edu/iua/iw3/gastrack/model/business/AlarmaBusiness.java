@@ -15,6 +15,7 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IAlarmaBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.AlarmaRepository;
+import ar.edu.iua.iw3.gastrack.websocket.service.AlarmasWebSocketService;
 
 @Service
 public class AlarmaBusiness implements IAlarmaBusiness {
@@ -25,6 +26,8 @@ public class AlarmaBusiness implements IAlarmaBusiness {
     @Autowired
     private UserBusiness userBusiness;
 
+    @Autowired
+    AlarmasWebSocketService alarmasWebSocketService;
 
     @Override
     public List<Alarma> list() throws BusinessException {
@@ -101,7 +104,9 @@ public class AlarmaBusiness implements IAlarmaBusiness {
         alarma.setUsuario(userBusiness.load(useremail));
         try
         {
-            return alarmaDAO.save(alarma);
+            alarmaDAO.save(alarma);
+            alarmasWebSocketService.notificarAceptacionAlarma(numeroOrden, tipoAlarma);
+            return alarma;
         }
         catch (Exception e)
         {

@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
 import ar.edu.iua.iw3.gastrack.websocket.dto.AlarmaTemperatura;
 
 @Service
@@ -26,5 +27,10 @@ public class AlarmasWebSocketService {
         dto.setPatente(orden.getCamion().getPatente());
 
         messagingTemplate.convertAndSend("/topic/alarma/temperatura", dto);   
+    }
+
+    public void notificarAceptacionAlarma(long numeroOrden, TipoAlarma tipoAlarma)
+    {
+        messagingTemplate.convertAndSend("/topic/alarma/aceptada", "Alarma " + tipoAlarma.toString().replace("_", " ") + " de orden " + numeroOrden + " aceptada.");
     }
 }
