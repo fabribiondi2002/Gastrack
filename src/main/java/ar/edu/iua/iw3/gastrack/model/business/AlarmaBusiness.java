@@ -15,7 +15,6 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IAlarmaBusiness;
 import ar.edu.iua.iw3.gastrack.model.persistence.AlarmaRepository;
-import ar.edu.iua.iw3.gastrack.websocket.service.AlarmasWebSocketService;
 
 @Service
 public class AlarmaBusiness implements IAlarmaBusiness {
@@ -26,8 +25,7 @@ public class AlarmaBusiness implements IAlarmaBusiness {
     @Autowired
     private UserBusiness userBusiness;
 
-    @Autowired
-    AlarmasWebSocketService alarmasWebSocketService;
+
 
     @Override
     public List<Alarma> list() throws BusinessException {
@@ -48,8 +46,8 @@ public class AlarmaBusiness implements IAlarmaBusiness {
     public Alarma add(Alarma alarma) throws BusinessException, FoundException {
         try
         {
-            loadByOrdenAndTipo(alarma.getOrden().getNumeroOrden(), alarma.getTipoAlarma());
-            if(!alarma.isAceptada())
+            Alarma prev = loadByOrdenAndTipo(alarma.getOrden().getNumeroOrden(), alarma.getTipoAlarma());
+            if(!prev.isAceptada())
             {
                 throw FoundException.builder().message("Ya existe una alarma igual que aún no fue aceptada").build();
             }
@@ -104,9 +102,8 @@ public class AlarmaBusiness implements IAlarmaBusiness {
         alarma.setUsuario(userBusiness.load(useremail));
         try
         {
-            alarmaDAO.save(alarma);
-            alarmasWebSocketService.notificarAceptacionAlarma(numeroOrden, tipoAlarma);
-            return alarma;
+
+            return alarmaDAO.save(alarma);
         }
         catch (Exception e)
         {

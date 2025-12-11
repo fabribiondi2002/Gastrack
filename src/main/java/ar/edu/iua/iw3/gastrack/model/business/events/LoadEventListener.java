@@ -42,7 +42,7 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 			alarma.setFechaEmision(((Detalle) event.getSource()).getFecha());
 			alarmaBusiness.add(alarma);
 			
-			alarmasWebSocketService.enviarAlarmaTemperatura(event.getOrden(), ((Detalle) event.getSource()).getFecha(), ((Detalle) event.getSource()).getTemperatura());
+			alarmasWebSocketService.enviarAlarmaTemperatura(event.getOrden(), ((Detalle) event.getSource()).getFecha());
 			
 			
 			emailBusiness.sendHighTempAlert(

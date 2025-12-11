@@ -1,6 +1,5 @@
 package ar.edu.iua.iw3.gastrack.websocket.service;
 
-
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
-import ar.edu.iua.iw3.gastrack.websocket.dto.AlarmaTemperatura;
+import ar.edu.iua.iw3.gastrack.websocket.dto.AlarmaDTO;
 
 @Service
 public class AlarmasWebSocketService {
@@ -18,19 +17,18 @@ public class AlarmasWebSocketService {
     private SimpMessagingTemplate messagingTemplate;
 
 
-    public void enviarAlarmaTemperatura(Orden orden, Date timestamp, double temperatura)
+    public void enviarAlarmaTemperatura(Orden orden, Date timestamp)
     {
-        AlarmaTemperatura dto = new AlarmaTemperatura();
+        AlarmaDTO dto = new AlarmaDTO();
         dto.setNumeroOrden(orden.getNumeroOrden());
-        dto.setTemperatura(temperatura);
+        dto.setTipoAlarma(TipoAlarma.ALTA_TEMPERATURA);;
         dto.setFecha(timestamp);
-        dto.setPatente(orden.getCamion().getPatente());
 
         messagingTemplate.convertAndSend("/topic/alarma/temperatura", dto);   
     }
 
-    public void notificarAceptacionAlarma(long numeroOrden, TipoAlarma tipoAlarma)
+    public void notificarCorrectaAceptacionAlarma(AlarmaDTO alarma)
     {
-        messagingTemplate.convertAndSend("/topic/alarma/aceptada", "Alarma " + tipoAlarma.toString().replace("_", " ") + " de orden " + numeroOrden + " aceptada.");
+        messagingTemplate.convertAndSend("/topic/alarma/aceptada", alarma);
     }
 }

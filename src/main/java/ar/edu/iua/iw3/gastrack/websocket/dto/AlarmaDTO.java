@@ -4,6 +4,7 @@ package ar.edu.iua.iw3.gastrack.websocket.dto;
 
 import java.util.Date;
 
+import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AlarmaTemperatura {
+public class AlarmaDTO {
 
     private long numeroOrden;
-    private double temperatura;
     private Date fecha;
-    private String patente;
+    private TipoAlarma tipoAlarma;
 }
