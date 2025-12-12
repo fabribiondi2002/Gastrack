@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AlarmaDTO {
+public class AlarmaWSDTO {
 
     private long numeroOrden;
     private Date fecha;

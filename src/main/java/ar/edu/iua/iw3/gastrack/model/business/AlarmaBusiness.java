@@ -7,6 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ar.edu.iua.iw3.gastrack.auth.UserBusiness;
 import ar.edu.iua.iw3.gastrack.model.Alarma;
 import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
@@ -14,9 +17,14 @@ import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.business.intefaces.IAlarmaBusiness;
+import ar.edu.iua.iw3.gastrack.model.deserializers.AlarmaDeserializer;
+import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.AlarmaDTO;
 import ar.edu.iua.iw3.gastrack.model.persistence.AlarmaRepository;
+import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class AlarmaBusiness implements IAlarmaBusiness {
 
     @Autowired
@@ -93,13 +101,24 @@ public class AlarmaBusiness implements IAlarmaBusiness {
 
 
     @Override
-    public Alarma aceptarAlarma(long numeroOrden, TipoAlarma tipoAlarma, String useremail, String observacion)
+    public Alarma aceptarAlarma(String json)
             throws BusinessException, NotFoundException {
-        Alarma alarma = loadByOrdenAndTipo(numeroOrden, tipoAlarma);
+
+        ObjectMapper mapper = JsonUtils.getObjectMapper(AlarmaDTO.class, new AlarmaDeserializer(AlarmaDTO.class), null);
+        AlarmaDTO alarmaDTO;
+
+        try {
+            alarmaDTO = mapper.readValue(json, AlarmaDTO.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().message("El formato JSON es incorrecto").build();
+        }
+
+        Alarma alarma = loadByOrdenAndTipo(alarmaDTO.getNumeroOrden(), alarmaDTO.getTipoAlarma());
         alarma.setAceptada(true);
         alarma.setFechaAceptacion(new Date());
-        alarma.setObservacion(observacion);
-        alarma.setUsuario(userBusiness.load(useremail));
+        alarma.setObservacion(alarmaDTO.getObservarcion());
+        alarma.setUsuario(userBusiness.load(alarmaDTO.getUsermail()));
         try
         {
 
