@@ -33,5 +33,7 @@ public class JsonAtributesConstants {
     public static final String[] TEMPERATURA = {"temperatura","temperature","temp"};
     public static final String[] CAUDAL = {"caudal","flow_rate","flowrate"};
     public static final String[] CONTRASENA_ACTIVACION = {"contrasena_activacion","contrasenaActivacion","activation_password"};
-    
+    public static final String[] TIPO_ALARMA = {"tipo_alarma","tipoAlarma","alarm_type"};
+    public static final String[] OBSERVACION = {"observacion","observarcion","observation","note"};
+    public static final String[] USERMAIL = {"usermail","user_mail","userEmail","email_usuario"};
 }
