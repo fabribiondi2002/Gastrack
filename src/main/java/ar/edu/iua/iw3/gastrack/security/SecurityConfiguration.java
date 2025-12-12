@@ -85,7 +85,7 @@ public class SecurityConfiguration {
 		http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.POST, Constants.URL_LOGIN).permitAll()
 				.requestMatchers("/v3/api-docs/**").permitAll().requestMatchers("/swagger-ui.html").permitAll()
 				.requestMatchers("/swagger-ui/**").permitAll().requestMatchers("/ui/**").permitAll()
-				.requestMatchers("/demo/**").permitAll().requestMatchers("/cabecera-websocket/**").permitAll().anyRequest().authenticated());
+				.requestMatchers("/demo/**").permitAll().requestMatchers("/websocket/**").permitAll().anyRequest().authenticated());
 		//http.httpBasic(Customizer.withDefaults());
 		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilter(new JWTAuthorizationFilter(authenticationManager()));

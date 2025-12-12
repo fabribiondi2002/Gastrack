@@ -39,6 +39,7 @@ import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import ar.edu.iua.iw3.gastrack.util.PDFGenerator;
+import ar.edu.iua.iw3.gastrack.websocket.service.OrdenWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -62,6 +63,8 @@ public class OrdenBusiness implements IOrdenBusiness {
     @Lazy
     private IDetalleBusiness detalleBusiness;
 
+    @Autowired
+    private OrdenWebSocketService ordenWebSocketService;
     /**
      * Listar todas las ordenes por estado
      * 
@@ -256,6 +259,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setFechaRecepcionInicial(new Date());
         orden.setEstado(Estado.PENDIENTE_PESAJE_INICIAL);
         log.info("Estado cambiado a PENDIENTE_PESAJE_INICIAL");
+        ordenWebSocketService.enviarOrden(orden);
         return add(orden);
     }
 
@@ -314,6 +318,8 @@ public class OrdenBusiness implements IOrdenBusiness {
         
         orden.setCargaHabilitada(true);
         orden.setFechaInicioCarga(new Date());
+        ordenWebSocketService.enviarOrden(orden);
+
         return update(orden);
     }
 
@@ -359,6 +365,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         // Cambia estado
         orden.siguienteEstado();
+        ordenWebSocketService.enviarOrden(orden);
 
         return update(orden);
     }
@@ -403,6 +410,8 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
         orden.setFechaFinCarga(new Date());
+        ordenWebSocketService.enviarOrden(orden);
+
         return update(orden);
 
     }
@@ -453,6 +462,8 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setPromedioDensidad(promedios.get("promedioDensidad"));
         orden.setPromedioTemperatura(promedios.get("promedioTemperatura"));
         orden.siguienteEstado();
+        ordenWebSocketService.enviarOrden(orden);
+
         return ordenDAO.save(orden);
     }
     /*

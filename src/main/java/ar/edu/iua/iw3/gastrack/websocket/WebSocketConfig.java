@@ -17,15 +17,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
     }
 
-   @Override
-public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/cabecera-websocket")
-            .setAllowedOriginPatterns("http://localhost:3000")
-            .withSockJS();
-
-    registry.addEndpoint("/cabecera-websocket")
-            .setAllowedOriginPatterns("http://localhost:3000");
-}
-
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/websocket")
+                .setAllowedOriginPatterns("*") 
+                .withSockJS();
+    }
 
 }
