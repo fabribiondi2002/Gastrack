@@ -41,25 +41,20 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 			alarma.setTipoAlarma(Alarma.TipoAlarma.ALTA_TEMPERATURA);
 			alarma.setFechaEmision(((Detalle) event.getSource()).getFecha());
 			alarmaBusiness.add(alarma);
-			
-			alarmasWebSocketService.enviarAlarmaTemperatura(event.getOrden(), ((Detalle) event.getSource()).getFecha());
-			
-			
+			alarmasWebSocketService.enviarAlarmaNueva(alarma);
+
 			emailBusiness.sendHighTempAlert(
-				event.getContacts(),
-	    		"Alerta de alta temperatura en la carga",
-	    		"Temperatura excesiva de " + ((Detalle) event.getSource()).getTemperatura()+ "°C registrada.",
-	    		String.valueOf(event.getOrden().getNumeroOrden()),
-	    		event.getOrden().getCamion().getPatente(),
-	    		((Detalle)event.getSource()).getFecha().toString(),
-	    		"www.google.com"//"http://gastrack.com/ordenes/" + event.getOrden().getId()
-	    	);
-		}
-		catch (FoundException e)
-		{
+					event.getContacts(),
+					"Alerta de alta temperatura en la carga",
+					"Temperatura excesiva de " + ((Detalle) event.getSource()).getTemperatura() + "°C registrada.",
+					String.valueOf(event.getOrden().getNumeroOrden()),
+					event.getOrden().getCamion().getPatente(),
+					((Detalle) event.getSource()).getFecha().toString(),
+					"www.google.com"// "http://gastrack.com/ordenes/" + event.getOrden().getId()
+			);
+		} catch (FoundException e) {
 			log.info("No se envio alerta de alta temperatura: " + e.getMessage(), e);
-		} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}

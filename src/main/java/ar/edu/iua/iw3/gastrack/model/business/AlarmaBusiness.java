@@ -35,78 +35,55 @@ public class AlarmaBusiness implements IAlarmaBusiness {
     private UserBusiness userBusiness;
 
     @Autowired
-private AlarmasWebSocketService alarmasWS;
-
+    private AlarmasWebSocketService alarmasWS;
 
     @Override
     public List<Alarma> list() throws BusinessException {
 
-        try
-        {
-            
+        try {
+
             return alarmaDAO.findAll();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw BusinessException.builder().ex(e).message(e.getMessage()).build();
         }
     }
-
 
     @Override
     public Alarma add(Alarma alarma) throws BusinessException, FoundException {
-        try
-        {
+        try {
             Alarma prev = loadByOrdenAndTipo(alarma.getOrden().getNumeroOrden(), alarma.getTipoAlarma());
-            if(!prev.isAceptada())
-            {
+            if (!prev.isAceptada()) {
                 throw FoundException.builder().message("Ya existe una alarma igual que aún no fue aceptada").build();
             }
             return alarmaDAO.save(alarma);
-            
-        }
-        catch (NotFoundException e)
-        {}
-         try
-        {
-            
-            Alarma guardada = alarmaDAO.save(alarma);
-            if (!guardada.isAceptada()) {
-                alarmasWS.enviarAlarmaNueva(guardada);
-            }
-            return guardada;
 
+        } catch (NotFoundException e) {
         }
-        catch (Exception ex)
-        {
-                throw BusinessException.builder().ex(ex).message(ex.getMessage()).build();
+        try {
+            return alarmaDAO.save(alarma);
+
+        } catch (Exception ex) {
+            throw BusinessException.builder().ex(ex).message(ex.getMessage()).build();
         }
     }
 
     @Override
-    public Alarma loadByOrdenAndTipo(long numeroOrden, TipoAlarma tipoAlarma) throws BusinessException, NotFoundException
-    {
-        Optional <Alarma> alarma;
-        try
-        {
+    public Alarma loadByOrdenAndTipo(long numeroOrden, TipoAlarma tipoAlarma)
+            throws BusinessException, NotFoundException {
+        Optional<Alarma> alarma;
+        try {
             alarma = alarmaDAO
-            .findTopByOrden_NumeroOrdenAndTipoAlarmaOrderByFechaEmisionDesc(numeroOrden, tipoAlarma);
-            
-        }
-        catch (Exception e)
-        {
+                    .findTopByOrden_NumeroOrdenAndTipoAlarmaOrderByFechaEmisionDesc(numeroOrden, tipoAlarma);
+
+        } catch (Exception e) {
             throw BusinessException.builder().ex(e).message(e.getMessage()).build();
         }
-        if(alarma.isPresent())
-        {
+        if (alarma.isPresent()) {
             return alarma.get();
-        }
-        else
-        {
+        } else {
             throw NotFoundException.builder().message("No hay alarmas de ese tipo registradas").build();
         }
     }
-
 
     @Override
     public Alarma aceptarAlarma(String json)
@@ -127,33 +104,24 @@ private AlarmasWebSocketService alarmasWS;
         alarma.setFechaAceptacion(new Date());
         alarma.setObservacion(alarmaDTO.getObservacion());
         alarma.setUsuario(userBusiness.load(alarmaDTO.getUsermail()));
-        try
-        {
+        try {
 
             return alarmaDAO.save(alarma);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw BusinessException.builder().ex(e).message(e.getMessage()).build();
         }
     }
-
 
     @Override
-    public List<Alarma> loadNoAceptadas() throws BusinessException{
-        try
-        {
+    public List<Alarma> loadNoAceptadas() throws BusinessException {
+        try {
             List<Alarma> alarmas = alarmaDAO.findByAceptadaFalse();
-      
+
             return alarmas;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw BusinessException.builder().ex(e).message(e.getMessage()).build();
         }
-        
+
     }
 
-
-    
 }

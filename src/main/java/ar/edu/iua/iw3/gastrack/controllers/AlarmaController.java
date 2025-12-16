@@ -167,7 +167,33 @@ public class AlarmaController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
-
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+	@Operation(operationId = "listar-alarmas-no-aceptadas", summary = "Lista todas las alarmas no aceptadas.", description = "Permite listar todas las alarmas no aceptadas registradas en el sistema.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Alarmas no aceptadas listadas correctamente.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista de alarmas no aceptadas", summary = "Lista completa de alarmas no aceptadas", description = "Ejemplo de respuesta JSON al listar alarmas no aceptadas.", value = """
+					[
+					    {
+					        "fecha": "2025-12-11T10:30:00",
+					        "tipo": "TEMPERATURA ALTA",
+					        "numero-orden": 12345,
+					        "aceptada": false
+					    },
+					    {
+					        "fecha": "2025-12-11T12:45:00",
+					        "tipo": "PRESION BAJA",
+					        "numero-orden": 12346,
+					        "aceptada": false
+					    }
+					]
+					"""))),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor.", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Error interno del servidor", value = """
+					{
+						"message": "Error procesando el resultado en JSON",
+						"code": 500,
+						"devInfo": "com.fasterxml.jackson.core.JsonProcessingException"
+					}
+					""")))
+	})
 	@GetMapping(value = "/noAceptadas", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> listNoAceptadas() {
 		try {
