@@ -29,12 +29,12 @@ public class AlarmaDeserializer extends StdDeserializer<AlarmaDTO> {
 
         long numeroOrden = JsonUtils.getLong(node, JsonAtributesConstants.NUMERO_ORDEN, null);
         String tipoAlarma = JsonUtils.getString(node, JsonAtributesConstants.TIPO_ALARMA, null);
-        String observarcion = JsonUtils.getString(node, JsonAtributesConstants.OBSERVACION, null);
+        String observacion = JsonUtils.getString(node, JsonAtributesConstants.OBSERVACION, null);
         String usermail = JsonUtils.getString(node, JsonAtributesConstants.USERMAIL, null);
 
         r.setNumeroOrden(numeroOrden);
         r.setTipoAlarma(TipoAlarma.valueOf(tipoAlarma));
-        r.setObservarcion(observarcion);
+        r.setObservacion(observacion);
         r.setUsermail(usermail);
 
 		return r;
