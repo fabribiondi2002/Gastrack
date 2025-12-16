@@ -246,10 +246,12 @@ public class DetalleController {
 	})
 
 	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CS')")
-	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE,    produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
+	@PostMapping(value = "/{ordenNumero}",
+             consumes = MediaType.APPLICATION_JSON_VALUE,
+             produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> add(HttpEntity<String> httpEntity, @PathVariable Long ordenNumero) {
 		try {
-			Detalle response = detalleBusiness.add(httpEntity.getBody());
+			Detalle response = detalleBusiness.add(httpEntity.getBody(), ordenNumero);
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_DETALLE + "/" + response.getId());
 			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);

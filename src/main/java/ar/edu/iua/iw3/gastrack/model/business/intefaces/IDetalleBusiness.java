@@ -28,7 +28,7 @@ public interface IDetalleBusiness {
 
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
-	public Detalle add(String json) throws NotFoundException, BusinessException, InvalidDetailException,
+	public Detalle add(String json, Long ordenNumero) throws NotFoundException, BusinessException, InvalidDetailException,
 		InvalidDetailFrecuencyException, OrderInvalidStateException, OrderNotAuthorizedToLoadException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;

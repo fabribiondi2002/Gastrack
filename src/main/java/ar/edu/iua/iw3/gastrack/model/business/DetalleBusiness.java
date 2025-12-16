@@ -121,7 +121,7 @@ public class DetalleBusiness implements IDetalleBusiness{
      */
 
     @Override
-	public Detalle add(String json)
+	public Detalle add(String json, Long ordenNumero)
         throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException,
         OrderInvalidStateException, OrderNotAuthorizedToLoadException
     {
@@ -137,7 +137,7 @@ public class DetalleBusiness implements IDetalleBusiness{
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         } 
-        Orden ord = ordenBusiness.loadByNumeroOrden(detalle.getOrden().getNumeroOrden());
+        Orden ord = ordenBusiness.loadByNumeroOrden(ordenNumero);
 
         if (!ord.getCargaHabilitada())
         {
