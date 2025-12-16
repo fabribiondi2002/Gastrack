@@ -25,10 +25,13 @@ public class AlarmaListSerializer extends StdSerializer<Alarma>{
 	public void serialize(Alarma value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             
         gen.writeStartObject(); 
-        gen.writeStringField("fecha",value.getFechaEmision().toString());
+        gen.writeStringField("fecha-emision",value.getFechaEmision().toString());
+        gen.writeStringField("fecha-aceptacion",value.getFechaAceptacion() != null ? value.getFechaAceptacion().toString() : null);
         gen.writeStringField("tipo",value.getTipoAlarma().toString().replace("_", " "));
         gen.writeNumberField("numero-orden", value.getOrden().getNumeroOrden());
         gen.writeBooleanField("aceptada", value.isAceptada());
+        gen.writeStringField("observacion", value.getObservacion());
+        gen.writeStringField("usuario", value.getUsuario() != null ? value.getUsuario().getEmail() : null);
         gen.writeEndObject();	
 
 	}
