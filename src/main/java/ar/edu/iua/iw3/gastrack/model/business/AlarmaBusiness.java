@@ -21,6 +21,7 @@ import ar.edu.iua.iw3.gastrack.model.deserializers.AlarmaDeserializer;
 import ar.edu.iua.iw3.gastrack.model.deserializers.DTO.AlarmaDTO;
 import ar.edu.iua.iw3.gastrack.model.persistence.AlarmaRepository;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import ar.edu.iua.iw3.gastrack.websocket.service.AlarmasWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -33,6 +34,8 @@ public class AlarmaBusiness implements IAlarmaBusiness {
     @Autowired
     private UserBusiness userBusiness;
 
+    @Autowired
+private AlarmasWebSocketService alarmasWS;
 
 
     @Override
@@ -66,7 +69,12 @@ public class AlarmaBusiness implements IAlarmaBusiness {
         {}
          try
         {
-            return alarmaDAO.save(alarma);
+            
+            Alarma guardada = alarmaDAO.save(alarma);
+            if (!guardada.isAceptada()) {
+                alarmasWS.enviarAlarmaNueva(guardada);
+            }
+            return guardada;
 
         }
         catch (Exception ex)
@@ -117,7 +125,7 @@ public class AlarmaBusiness implements IAlarmaBusiness {
         Alarma alarma = loadByOrdenAndTipo(alarmaDTO.getNumeroOrden(), alarmaDTO.getTipoAlarma());
         alarma.setAceptada(true);
         alarma.setFechaAceptacion(new Date());
-        alarma.setObservacion(alarmaDTO.getObservarcion());
+        alarma.setObservacion(alarmaDTO.getObservacion());
         alarma.setUsuario(userBusiness.load(alarmaDTO.getUsermail()));
         try
         {
@@ -128,6 +136,22 @@ public class AlarmaBusiness implements IAlarmaBusiness {
         {
             throw BusinessException.builder().ex(e).message(e.getMessage()).build();
         }
+    }
+
+
+    @Override
+    public List<Alarma> loadNoAceptadas() throws BusinessException{
+        try
+        {
+            List<Alarma> alarmas = alarmaDAO.findByAceptadaFalse();
+      
+            return alarmas;
+        }
+        catch (Exception e)
+        {
+            throw BusinessException.builder().ex(e).message(e.getMessage()).build();
+        }
+        
     }
 
 

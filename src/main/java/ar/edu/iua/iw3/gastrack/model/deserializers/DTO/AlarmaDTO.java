@@ -14,6 +14,6 @@ public class AlarmaDTO {
 
     private long numeroOrden;
     private TipoAlarma tipoAlarma;
-    private String observarcion;
+    private String observacion;
     private String usermail;
 }

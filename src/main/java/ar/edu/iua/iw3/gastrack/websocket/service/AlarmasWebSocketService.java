@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.Alarma;
 import ar.edu.iua.iw3.gastrack.model.Alarma.TipoAlarma;
+import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.websocket.dto.AlarmaWSDTO;
 
 @Service
@@ -21,9 +22,22 @@ public class AlarmasWebSocketService {
     {
         AlarmaWSDTO dto = new AlarmaWSDTO();
         dto.setNumeroOrden(orden.getNumeroOrden());
-        dto.setTipoAlarma(TipoAlarma.ALTA_TEMPERATURA);;
+        dto.setTipoAlarma(TipoAlarma.ALTA_TEMPERATURA);
         dto.setFecha(timestamp);
 
         messagingTemplate.convertAndSend("/topic/alarma/temperatura", dto);   
     }
+
+    public void enviarAlarmaNueva(Alarma alarma) {
+        AlarmaWSDTO dto = new AlarmaWSDTO();
+        dto.setId(alarma.getId());
+        dto.setNumeroOrden(alarma.getOrden().getNumeroOrden());
+        dto.setTipoAlarma(alarma.getTipoAlarma());
+        dto.setFecha(alarma.getFechaEmision());
+
+        // Emitir a todos los clientes suscriptos
+        messagingTemplate.convertAndSend("/topic/alarma/alarmaNueva", dto);
+    }
+    
 }
+

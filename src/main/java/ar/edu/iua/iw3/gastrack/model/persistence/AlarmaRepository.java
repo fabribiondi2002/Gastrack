@@ -1,5 +1,6 @@
 package ar.edu.iua.iw3.gastrack.model.persistence;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,5 @@ public interface AlarmaRepository extends JpaRepository<Alarma, Long> {
 
     // Buscar la alarma más reciente por número de orden y tipo de alarma
     Optional<Alarma> findTopByOrden_NumeroOrdenAndTipoAlarmaOrderByFechaEmisionDesc(long numeroOrden,Alarma.TipoAlarma tipoAlarma);
+    List<Alarma> findByAceptadaFalse();
 }
