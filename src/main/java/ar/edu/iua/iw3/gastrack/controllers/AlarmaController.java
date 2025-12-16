@@ -16,12 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import ar.edu.iua.iw3.gastrack.model.Alarma;
-
 import ar.edu.iua.iw3.gastrack.model.business.AlarmaBusiness;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.NotFoundException;
 import ar.edu.iua.iw3.gastrack.model.serializers.AlarmaListSerializer;
-
 import ar.edu.iua.iw3.gastrack.util.IStandardResponseBusiness;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -169,4 +167,22 @@ public class AlarmaController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     }
+
+	@GetMapping(value = "/noAceptadas", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> listNoAceptadas() {
+		try {
+			StdSerializer<Alarma> ser = new AlarmaListSerializer(Alarma.class, false);
+			String result = JsonUtils.getObjectMapper(Alarma.class, ser, null)
+					.writeValueAsString(alarmaBusiness.loadNoAceptadas());
+			Object jsonResult = new ObjectMapper().readValue(result, Object.class);
+			return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+		} catch (BusinessException e) {
+			return new ResponseEntity<>(response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (JsonProcessingException e) {
+			return new ResponseEntity<>(
+					response.build(HttpStatus.INTERNAL_SERVER_ERROR, e, "Error procesando el resultado en JSON"),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} 
+	}
 }

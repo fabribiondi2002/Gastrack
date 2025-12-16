@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AlarmaWSDTO {
-
+    private long id;
     private long numeroOrden;
     private Date fecha;
     private TipoAlarma tipoAlarma;

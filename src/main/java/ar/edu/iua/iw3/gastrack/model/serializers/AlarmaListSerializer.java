@@ -26,8 +26,8 @@ public class AlarmaListSerializer extends StdSerializer<Alarma>{
             
         gen.writeStartObject(); 
         gen.writeStringField("fecha",value.getFechaEmision().toString());
-        gen.writeStringField("tipo",value.getTipoAlarma().toString().replace("_", " "));
-        gen.writeNumberField("numero-orden", value.getOrden().getNumeroOrden());
+        gen.writeStringField("tipoAlarma",value.getTipoAlarma().toString().replace("_", " "));
+        gen.writeNumberField("numeroOrden", value.getOrden().getNumeroOrden());
         gen.writeBooleanField("aceptada", value.isAceptada());
         gen.writeEndObject();	
 

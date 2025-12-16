@@ -9,7 +9,7 @@ package ar.edu.iua.iw3.gastrack.util;
  * @since 2025-10-26
  */
 public class JsonAtributesConstants {
-    public static final String[] NUMERO_ORDEN = {"numero_orden","orden","orden_numero"};
+    public static final String[] NUMERO_ORDEN = {"numero_orden","orden","orden_numero", "numeroOrden","order_number"};
     public static final String[] FECHA_CARGA_PREVISTA_ORDEN = {"fecha_carga_prevista", "fecha_prevista_carga", "fecha_prevista"};
     public static final String[] PRESET_ORDEN = {"preset", "preset_volumen", "volumen_preset"};
     public static final String[] CODIGO_EXTERNO_ORDEN = {"codigo_externo", "codigo_externo_orden","external_code"};
@@ -34,6 +34,6 @@ public class JsonAtributesConstants {
     public static final String[] CAUDAL = {"caudal","flow_rate","flowrate"};
     public static final String[] CONTRASENA_ACTIVACION = {"contrasena_activacion","contrasenaActivacion","activation_password"};
     public static final String[] TIPO_ALARMA = {"tipo_alarma","tipoAlarma","alarm_type"};
-    public static final String[] OBSERVACION = {"observacion","observarcion","observation","note"};
+    public static final String[] OBSERVACION = {"observacion","observation","note"};
     public static final String[] USERMAIL = {"usermail","user_mail","userEmail","email_usuario"};
 }
