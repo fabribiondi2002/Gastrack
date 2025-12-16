@@ -28,13 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Filtro de autorización JWT para validar tokens en las solicitudes entrantes.
+ * 
  * @author Leandro Biondi
  * @author Benjamin Vargas
  * @author Antonella Badami
  * @version 1.0
  * @since 2025-12-07
  */
-
 
 @Slf4j
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
@@ -45,17 +45,25 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
+		String path = req.getRequestURI();
+
+		// 🔥 EXCLUIR WEBSOCKET / SOCKJS
+		if (path.startsWith("/websocket")) {
+			chain.doFilter(req, res);
+			return;
+		}
 		String header = req.getHeader(AuthConstants.AUTH_HEADER_NAME);
 		String param = req.getParameter(AuthConstants.AUTH_PARAM_NAME);
 		boolean byHeader = !(header == null || !header.startsWith(AuthConstants.TOKEN_PREFIX));
 		boolean byParam = !(param == null || param.trim().length() < 10);
-		
+
 		// Si no se envía o es correcto el inicio de la cabecera o bien no se envía un
 		// parámetro correcto, se continúa con el resto de los filtros
 		if (!byHeader && !byParam) {
 			chain.doFilter(req, res);
 			return;
 		}
+
 		// Le damos prioridad al header.
 		UsernamePasswordAuthenticationToken authentication = getAuthentication(req, byHeader);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -72,23 +80,22 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
 		if (token != null) {
 			// Parseamos el token usando la librería
-			DecodedJWT jwt=null;
+			DecodedJWT jwt = null;
 			try {
 				jwt = JWT.require(Algorithm.HMAC512(AuthConstants.SECRET.getBytes())).build().verify(token);
 				log.trace("Token recibido por '{}'", byHeader ? "header" : "query param");
 				log.trace("Usuario logueado: " + jwt.getSubject());
 				log.trace("Roles: " + jwt.getClaim("roles"));
 				log.trace("Custom JWT Version: " + jwt.getClaim("version").asString());
-				
-				
-				Set<Role> roles=new HashSet<Role>();
-				
+
+				Set<Role> roles = new HashSet<Role>();
+
 				List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 				@SuppressWarnings("unchecked")
 				List<String> rolesStr = (List<String>) jwt.getClaim("roles").as(List.class);
 				authorities = rolesStr.stream().map(role -> new SimpleGrantedAuthority(role))
 						.collect(Collectors.toList());
-				roles=rolesStr.stream().map(role-> new Role(role,0,role)).collect(Collectors.toSet());
+				roles = rolesStr.stream().map(role -> new Role(role, 0, role)).collect(Collectors.toSet());
 				String username = jwt.getSubject();
 
 				if (username != null) {
@@ -102,8 +109,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 			} catch (Exception e) {
 				log.error(e.getMessage());
 			}
-			
-			
+
 			return null;
 		}
 		return null;
