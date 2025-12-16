@@ -118,11 +118,17 @@ public class DetalleController {
 	@Operation(
     	operationId = "add-detalle",
     	summary = "Agrega un nuevo detalle.",
-    	description = "Permite registrar un nuevo detalle a partir de un cuerpo JSON. Si se crea correctamente, devuelve la cabecera 'location' con la URL del recurso creado."
+    	description = "Permite registrar un nuevo detalle a partir de un cuerpo JSON. El número de orden se envía por la URL. Si se crea correctamente, devuelve la cabecera 'location' con la URL del recurso creado."
+	)
+	@Parameter(
+		name = "ordenNumero",
+		description = "Número de la orden a la cual se asociará el detalle.",
+		required = true,
+		example = "1234"
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
     	required = true,
-    	description = "Datos del detalle a crear.",
+    	description = "Datos del detalle a crear. El número de orden no se incluye en el body, ya que se envía por la URL.",
     	content = @Content(
     	    mediaType = "application/json",
     	    schema = @Schema(implementation = Detalle.class),
@@ -133,7 +139,6 @@ public class DetalleController {
     	            description = "Ejemplo de cuerpo válido para crear un nuevo detalle.",
     	            value = """
     	            {
-    	                "numero_orden": 1234,
 						"masaAcumulada": 20000.0,
     					"densidad": 0.82,
     					"temperatura": 25.5,
