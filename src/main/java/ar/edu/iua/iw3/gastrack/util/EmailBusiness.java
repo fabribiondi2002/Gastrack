@@ -43,8 +43,7 @@ public class EmailBusiness {
     	String detalle,
     	String orden,
     	String patente,
-    	String fecha,
-    	String link
+    	String fecha
     ) {
         try {
 
@@ -55,7 +54,6 @@ public class EmailBusiness {
     		html = html.replace("${orden}", orden == null ? "" : orden);
     		html = html.replace("${patente}", patente == null ? "" : patente);
     		html = html.replace("${fecha}", fecha == null ? "" : fecha);
-    		html = html.replace("${link}", link == null ? "#" : link);
 
 
             MimeMessage mensaje = emailSender.createMimeMessage();
