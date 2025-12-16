@@ -51,8 +51,7 @@ public class LoadEventListener implements ApplicationListener<LoadEvent> {
 	    		"Temperatura excesiva de " + ((Detalle) event.getSource()).getTemperatura()+ "°C registrada.",
 	    		String.valueOf(event.getOrden().getNumeroOrden()),
 	    		event.getOrden().getCamion().getPatente(),
-	    		((Detalle)event.getSource()).getFecha().toString(),
-	    		"www.google.com"//"http://gastrack.com/ordenes/" + event.getOrden().getId()
+	    		((Detalle)event.getSource()).getFecha().toString()
 	    	);
 		}
 		catch (FoundException e)
