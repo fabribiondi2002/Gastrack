@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
+import ar.edu.iua.iw3.gastrack.model.business.events.LoadEvent;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BusinessException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.FoundException;
 import ar.edu.iua.iw3.gastrack.model.business.exception.InvalidDetailException;
@@ -27,6 +29,7 @@ import ar.edu.iua.iw3.gastrack.model.deserializers.DetalleJsonDeserializer;
 import ar.edu.iua.iw3.gastrack.model.persistence.DetalleRepository;
 import ar.edu.iua.iw3.gastrack.util.DetalleManager;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import ar.edu.iua.iw3.gastrack.websocket.service.CabeceraWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,6 +50,12 @@ public class DetalleBusiness implements IDetalleBusiness{
 	private DetalleRepository detalleDAO;
     @Autowired
 	private IOrdenBusiness ordenBusiness;
+    
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private CabeceraWebSocketService wsService;
 
     /**
      * Listar todos los detalles
@@ -90,6 +99,13 @@ public class DetalleBusiness implements IDetalleBusiness{
     @Value("${detalle.frecuencia.muestreo.milis:10000}")
     private long frecuenciaMuestreoMilis; // Frecuencia de muestreo en milisegundos
 
+    @Value("${detalle.umbral.temperatura.c:230.0}")
+    private double umbralTemperatura; // Umbral de temperatura en grados Celsius
+
+    @Value("#{'${detalles.alertas.correos}'.split(',')}")
+    private List<String> correosAlerta; // Lista de correos para alertas
+
+
      /**
      * Agregar un detalle
      * Se implementa deserializador personalizado para validar el JSON de entrada
@@ -105,7 +121,7 @@ public class DetalleBusiness implements IDetalleBusiness{
      */
 
     @Override
-	public Detalle add(String json)
+	public Detalle add(String json, Long ordenNumero)
         throws NotFoundException, BusinessException, InvalidDetailException,InvalidDetailFrecuencyException,
         OrderInvalidStateException, OrderNotAuthorizedToLoadException
     {
@@ -121,7 +137,7 @@ public class DetalleBusiness implements IDetalleBusiness{
             log.error(e.getMessage(), e);
             throw BusinessException.builder().ex(e).build();
         } 
-        Orden ord = ordenBusiness.loadByNumeroOrden(detalle.getOrden().getNumeroOrden());
+        Orden ord = ordenBusiness.loadByNumeroOrden(ordenNumero);
 
         if (!ord.getCargaHabilitada())
         {
@@ -142,6 +158,24 @@ public class DetalleBusiness implements IDetalleBusiness{
         detalle.setOrden(ord);
         detalle.setFecha(new Date());
         DetalleManager.manage(detalleDAO, detalle,frecuenciaMuestreoMilis);
+
+        if(detalle.getTemperatura() > umbralTemperatura)
+        {
+            applicationEventPublisher.publishEvent(new LoadEvent(detalle, correosAlerta,ord,LoadEvent.TypeEvent.HIGH_TEMP));
+        }
+
+        if(ord.getFechaPrimerMedicion() == null)
+        {
+            ord.setFechaPrimerMedicion(detalle.getFecha());
+        }
+        ord.setFechaUltimoMedicion(detalle.getFecha());
+        ord.setUltimaDensidad(detalle.getDensidad());
+        ord.setUltimaTemperatura(detalle.getTemperatura());
+        ord.setUltimoCaudal(detalle.getCaudal());
+        ord.setUltimaMasaAcumulada(detalle.getMasaAcumulada());
+        ordenBusiness.update(ord);
+        wsService.enviarCabecera(ord);
+
 		return detalleDAO.save(detalle);
     }
 
@@ -306,6 +340,17 @@ public class DetalleBusiness implements IDetalleBusiness{
             throw NotFoundException.builder().message("No se encuentran detalles para la orden id=" + ordenId).build();
         }
         return r.get();
+    }
+    @Override
+    public Date loadFirstDetailDate(long ordenId) throws NotFoundException, BusinessException {
+        Detalle detalle = getFirstDetailByOrderId(ordenId);
+        return detalle.getFecha();
+    }
+
+    @Override
+    public Date loadLastDetailDate(long ordenId) throws NotFoundException, BusinessException {
+        Detalle detalle = getLastDetailByOrderId(ordenId);
+        return detalle.getFecha();
     }
 
 }

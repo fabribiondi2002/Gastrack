@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ar.edu.iua.iw3.gastrack.model.Detalle;
 import ar.edu.iua.iw3.gastrack.model.Orden;
 import ar.edu.iua.iw3.gastrack.model.Orden.Estado;
 import ar.edu.iua.iw3.gastrack.model.business.exception.BadActivationPasswordException;
@@ -39,6 +38,8 @@ import ar.edu.iua.iw3.gastrack.model.persistence.OrdenRepository;
 import ar.edu.iua.iw3.gastrack.model.serializers.DTO.ConciliacionDTO;
 import ar.edu.iua.iw3.gastrack.util.ContrasenaActivacionUtiles;
 import ar.edu.iua.iw3.gastrack.util.JsonUtils;
+import ar.edu.iua.iw3.gastrack.util.PDFGenerator;
+import ar.edu.iua.iw3.gastrack.websocket.service.OrdenWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -62,6 +63,8 @@ public class OrdenBusiness implements IOrdenBusiness {
     @Lazy
     private IDetalleBusiness detalleBusiness;
 
+    @Autowired
+    private OrdenWebSocketService ordenWebSocketService;
     /**
      * Listar todas las ordenes por estado
      * 
@@ -256,6 +259,7 @@ public class OrdenBusiness implements IOrdenBusiness {
         orden.setFechaRecepcionInicial(new Date());
         orden.setEstado(Estado.PENDIENTE_PESAJE_INICIAL);
         log.info("Estado cambiado a PENDIENTE_PESAJE_INICIAL");
+        ordenWebSocketService.enviarOrden(orden);
         return add(orden);
     }
 
@@ -311,8 +315,10 @@ public class OrdenBusiness implements IOrdenBusiness {
         if (!orden.getContrasenaActivacion().equals(nOrdenPassDTO.getContrasenaActivacion())) {
             throw BadActivationPasswordException.builder().message("La contrasena de activacion es incorrecta").build();
         }
-
+        
         orden.setCargaHabilitada(true);
+        orden.setFechaInicioCarga(new Date());
+        ordenWebSocketService.enviarOrden(orden);
 
         return update(orden);
     }
@@ -359,6 +365,7 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         // Cambia estado
         orden.siguienteEstado();
+        ordenWebSocketService.enviarOrden(orden);
 
         return update(orden);
     }
@@ -402,7 +409,9 @@ public class OrdenBusiness implements IOrdenBusiness {
 
         orden.setCargaHabilitada(false);
         orden.siguienteEstado();
-        orden.setFechaCierreOrdenParaCarga(new Date());
+        orden.setFechaFinCarga(new Date());
+        ordenWebSocketService.enviarOrden(orden);
+
         return update(orden);
 
     }
@@ -442,40 +451,19 @@ public class OrdenBusiness implements IOrdenBusiness {
         if (pesajeFinal.getPesoFinal() <= orden.getPesoInicial()) {
             throw InvalidOrderAttributeException.builder().message("valor de peso final es menor al del peso inicial").build();
         }
-        Detalle primerDetalle;
-        try {
-            primerDetalle = detalleBusiness.getFirstDetailByOrderId(orden.getId());
-        } catch (NotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw NotFoundException.builder()
-                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
-        }
-        orden.setFechaPrimerMedicion(primerDetalle.getFecha());
-
-        Detalle ultimoDetalle;
-        try {
-            ultimoDetalle = detalleBusiness.getLastDetailByOrderId(orden.getId());
-        } catch (NotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw NotFoundException.builder()
-                    .message("No se encontraron detalles para la orden de numero:" + orden.getNumeroOrden()).build();
-        }
         double pesoFinal = pesajeFinal.getPesoFinal();
         orden.setPesoFinal(pesoFinal);
         orden.setFechaPesajeFinal(new java.util.Date());
-
+        orden.setFechaPrimerMedicion(detalleBusiness.loadFirstDetailDate(orden.getId()));
+        orden.setFechaUltimoMedicion(detalleBusiness.loadLastDetailDate(orden.getId()));
         Map<String, Double> promedios;
         promedios = detalleBusiness.loadAverageDetails(orden.getId());
         orden.setPromedioCaudal(promedios.get("promedioCaudal"));
         orden.setPromedioDensidad(promedios.get("promedioDensidad"));
         orden.setPromedioTemperatura(promedios.get("promedioTemperatura"));
-
-        orden.setUltimaMasaAcumulada(ultimoDetalle.getMasaAcumulada());
-        orden.setUltimaDensidad(ultimoDetalle.getDensidad());
-        orden.setUltimaTemperatura(ultimoDetalle.getTemperatura());
-        orden.setUltimoCaudal(ultimoDetalle.getCaudal());
-        orden.setFechaUltimoMedicion(ultimoDetalle.getFecha());
         orden.siguienteEstado();
+        ordenWebSocketService.enviarOrden(orden);
+
         return ordenDAO.save(orden);
     }
     /*
@@ -503,6 +491,8 @@ public class OrdenBusiness implements IOrdenBusiness {
                     .message("La orden numero " + orden.getNumeroOrden() + " no se encuentra en estado FINALIZADO")
                     .build();
         }
+        conciliacionDTO.setNumeroOrden(orden.getNumeroOrden());
+        conciliacionDTO.setCodigoExterno(orden.getCodigoExterno());
         conciliacionDTO.setPesajeInicial(orden.getPesoInicial());
         conciliacionDTO.setPesajeFinal(orden.getPesoFinal());
         conciliacionDTO.setProductoCargado(orden.getUltimaMasaAcumulada());
@@ -515,4 +505,26 @@ public class OrdenBusiness implements IOrdenBusiness {
         return conciliacionDTO;
     }
 
+    /**
+     * Listar todas las ordenes por fecha descendente
+     */
+    @Override
+    public List<Orden> list() throws BusinessException {
+        try {
+            return ordenDAO.findAll();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw BusinessException.builder().ex(e).build();
+        }
+    }
+    /**
+     * Generar el PDF de conciliación para una orden
+     * @param conciliacion ConciliacionDTO con los datos de la conciliación
+     * @return Array de bytes con el contenido del PDF
+     */
+    @Override
+    public byte[] generarConciliacionPdf(ConciliacionDTO conciliacion) {
+        PDFGenerator pdfGenerator = new PDFGenerator();
+        return pdfGenerator.generarConciliacionPdf(conciliacion);
+    }
 }

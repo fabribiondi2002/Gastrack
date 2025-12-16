@@ -1,5 +1,6 @@
 package ar.edu.iua.iw3.gastrack.model.business.intefaces;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public interface IDetalleBusiness {
 
     public Detalle load(long id) throws NotFoundException, BusinessException;
 
-	public Detalle add(String json) throws NotFoundException, BusinessException, InvalidDetailException,
+	public Detalle add(String json, Long ordenNumero) throws NotFoundException, BusinessException, InvalidDetailException,
 		InvalidDetailFrecuencyException, OrderInvalidStateException, OrderNotAuthorizedToLoadException;
 
 	public Detalle update(Detalle detalle) throws FoundException, NotFoundException, BusinessException;
@@ -40,6 +41,10 @@ public interface IDetalleBusiness {
 
 	public Detalle getFirstDetailByOrderId(long ordenId) throws NotFoundException, BusinessException;
 
-	public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException;	
+	public Map<String, Double> loadAverageDetails(long ordenId) throws NotFoundException, BusinessException;
+
+	public Date loadFirstDetailDate(long ordenId) throws NotFoundException, BusinessException;
+
+    public Date loadLastDetailDate(long ordenId) throws NotFoundException, BusinessException;	
 
 }

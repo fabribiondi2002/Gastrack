@@ -24,7 +24,9 @@ public class ConciliacionSerializer extends StdSerializer<ConciliacionDTO>{
 	@Override
 	public void serialize(ConciliacionDTO value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		
-		gen.writeStartObject(); 
+		gen.writeStartObject();
+		gen.writeNumberField("Número de orden",value.getNumeroOrden());
+		gen.writeStringField("Código externo",value.getCodigoExterno()); 
 		gen.writeNumberField("Pesaje inicial",value.getPesajeInicial());
 		gen.writeNumberField("Pesaje final",value.getPesajeFinal());
 		gen.writeNumberField("Producto cargado",value.getProductoCargado());

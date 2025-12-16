@@ -24,6 +24,8 @@ public interface IOrdenBusiness {
 
     public List<Orden> listByStatus(Orden.Estado status) throws BusinessException, NotFoundException;
 
+    public List<Orden> list() throws BusinessException;
+
     public Orden load(long id) throws NotFoundException, BusinessException;
 
     public Orden add(Orden orden) throws FoundException, BusinessException;
@@ -47,4 +49,6 @@ public interface IOrdenBusiness {
     public Orden registrarCierreOrden(String json) throws NotFoundException, BusinessException, OrderInvalidStateException, InvalidOrderAttributeException;
 
     public ConciliacionDTO crearConciliacion(long numeroOrden) throws NotFoundException, BusinessException, OrderInvalidStateException;
+
+    public byte[] generarConciliacionPdf(ConciliacionDTO conciliacion);
 }

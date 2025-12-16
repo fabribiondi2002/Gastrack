@@ -2,6 +2,8 @@ package ar.edu.iua.iw3.gastrack.model;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -62,6 +64,7 @@ public class Detalle {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_orden", nullable = false)
+    @JsonIgnore
     private Orden orden;
 
 }

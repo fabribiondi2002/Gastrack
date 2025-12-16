@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -117,11 +118,17 @@ public class DetalleController {
 	@Operation(
     	operationId = "add-detalle",
     	summary = "Agrega un nuevo detalle.",
-    	description = "Permite registrar un nuevo detalle a partir de un cuerpo JSON. Si se crea correctamente, devuelve la cabecera 'location' con la URL del recurso creado."
+    	description = "Permite registrar un nuevo detalle a partir de un cuerpo JSON. El número de orden se envía por la URL. Si se crea correctamente, devuelve la cabecera 'location' con la URL del recurso creado."
+	)
+	@Parameter(
+		name = "ordenNumero",
+		description = "Número de la orden a la cual se asociará el detalle.",
+		required = true,
+		example = "1234"
 	)
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
     	required = true,
-    	description = "Datos del detalle a crear.",
+    	description = "Datos del detalle a crear. El número de orden no se incluye en el body, ya que se envía por la URL.",
     	content = @Content(
     	    mediaType = "application/json",
     	    schema = @Schema(implementation = Detalle.class),
@@ -132,7 +139,6 @@ public class DetalleController {
     	            description = "Ejemplo de cuerpo válido para crear un nuevo detalle.",
     	            value = """
     	            {
-    	                "numero_orden": 1234,
 						"masaAcumulada": 20000.0,
     					"densidad": 0.82,
     					"temperatura": 25.5,
@@ -244,10 +250,13 @@ public class DetalleController {
     	)
 	})
 
-	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE,    produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> add(HttpEntity<String> httpEntity) {
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CS')")
+	@PostMapping(value = "/{ordenNumero}",
+             consumes = MediaType.APPLICATION_JSON_VALUE,
+             produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> add(HttpEntity<String> httpEntity, @PathVariable Long ordenNumero) {
 		try {
-			Detalle response = detalleBusiness.add(httpEntity.getBody());
+			Detalle response = detalleBusiness.add(httpEntity.getBody(), ordenNumero);
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.set("location", Constants.URL_DETALLE + "/" + response.getId());
 			return new ResponseEntity<>(responseHeaders, HttpStatus.CREATED);
